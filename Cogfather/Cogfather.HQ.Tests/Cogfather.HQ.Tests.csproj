@@ -18,4 +18,9 @@
         <Using Include="Xunit"/>
     </ItemGroup>
 
+    <ItemGroup>
+      <ProjectReference Include="..\Cogfather.HQ.Application\Cogfather.HQ.Application.csproj" />
+      <ProjectReference Include="..\Cogfather.HQ.Domain\Cogfather.HQ.Domain.csproj" />
+    </ItemGroup>
+
 </Project>

@@ -6,4 +6,8 @@
         <Nullable>enable</Nullable>
     </PropertyGroup>
 
+    <ItemGroup>
+      <ProjectReference Include="..\Cogfather.Node.Application\Cogfather.Node.Application.csproj" />
+    </ItemGroup>
+
 </Project>

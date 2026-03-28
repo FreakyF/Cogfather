@@ -14,4 +14,9 @@
       </Content>
     </ItemGroup>
 
+    <ItemGroup>
+      <ProjectReference Include="..\Cogfather.HQ.Application\Cogfather.HQ.Application.csproj" />
+      <ProjectReference Include="..\Cogfather.HQ.Infrastructure\Cogfather.HQ.Infrastructure.csproj" />
+    </ItemGroup>
+
 </Project>

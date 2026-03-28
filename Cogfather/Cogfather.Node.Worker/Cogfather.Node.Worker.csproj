@@ -16,4 +16,9 @@
       </Content>
     </ItemGroup>
 
+    <ItemGroup>
+      <ProjectReference Include="..\Cogfather.Node.Application\Cogfather.Node.Application.csproj" />
+      <ProjectReference Include="..\Cogfather.Node.Infrastructure\Cogfather.Node.Infrastructure.csproj" />
+    </ItemGroup>
+
 </Project>
