@@ -1,0 +1,81 @@
+# .NET / Build Outputs
+[Bb]in/
+[Oo]bj/
+TestResults/
+packages/
+*.user
+*.userprefs
+*.suo
+*.userosscache
+*.sln.docstates
+.vs/
+
+# Rider / ReSharper
+.idea/
+*.sln.iml
+*.DotSettings.user
+_ReSharper*/
+
+# Visual Studio Code
+.vscode/*
+!.vscode/settings.json
+!.vscode/tasks.json
+!.vscode/launch.json
+!.vscode/extensions.json
+*.code-workspace
+
+# Blazor / Frontend
+node_modules/
+wwwroot/dist/
+npm-debug.log
+yarn-error.log
+
+# RabbitMQ
+rabbitmq_data/
+.erlang.cookie
+
+# Docker
+.docker/
+docker-compose.override.yml
+
+# Kubernetes / Secrets
+*.secret.yaml
+secrets/
+.kube/
+
+# Environment Variables
+.env
+.env.*
+!.env.example
+!.env.template
+
+# Logs
+*.log
+
+# App settings / Secrets
+appsettings.Development.json
+appsettings.Local.json
+secrets.json
+
+# Coverage / Tests
+coverage/
+*.coverage
+*.coveragexml
+
+# Windows
+Thumbs.db
+Desktop.ini
+$RECYCLE.BIN/
+*.lnk
+
+# macOS
+.DS_Store
+.AppleDouble
+.LSOverride
+Icon?
+
+# Linux
+*~
+.fuse_hidden*
+.directory
+.Trash-*
