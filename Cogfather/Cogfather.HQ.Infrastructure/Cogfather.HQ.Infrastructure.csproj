@@ -10,4 +10,9 @@
       <ProjectReference Include="..\Cogfather.HQ.Application\Cogfather.HQ.Application.csproj" />
     </ItemGroup>
 
+    <ItemGroup>
+      <PackageReference Include="JetBrains.Annotations" Version="2025.2.4" />
+      <PackageReference Include="MassTransit.RabbitMQ" Version="8.5.8" />
+    </ItemGroup>
+
 </Project>

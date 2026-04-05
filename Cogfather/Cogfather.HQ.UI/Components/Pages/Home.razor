@@ -1,7 +1,76 @@
 ﻿@page "/"
+@using Cogfather.HQ.Application.Interfaces
+@using Cogfather.HQ.Domain.Entities
+@using Cogfather.Contracts.Commands 
+@using MassTransit         
+@inject IProductionCatalog Catalog
+@inject ILogger<Home> Logger
+@inject IBus Bus
 
-<PageTitle>Home</PageTitle>
 
-<h1>Hello, world!</h1>
+<PageTitle>HQ Dashboard</PageTitle>
 
-Welcome to your new app.
+<h1>Production Catalog</h1>
+
+@if (_recipes == null)
+{
+    <p><em>Loading recipes from infrastructure...</em></p>
+}
+else if (!_recipes.Any())
+{
+    <p><em>No recipes found. Check your JSON file.</em></p>
+}
+else
+{
+    <table class="table table-striped table-hover mt-4">
+        <thead class="table-dark">
+        <tr>
+            <th>Recipe ID</th>
+            <th>Energy (Time)</th>
+            <th>Ingredients Count</th>
+            <th>Action</th>
+        </tr>
+        </thead>
+        <tbody>
+        @foreach (var recipe in _recipes.Take(250))
+        {
+            <tr>
+                <td class="align-middle"><strong>@recipe.Id</strong></td>
+                <td class="align-middle">@recipe.Energy s</td>
+                <td class="align-middle">@recipe.Ingredients.Count</td>
+                <td>
+                    <button class="btn btn-primary btn-sm" @onclick="() => OnOrderClicked(recipe.Id)">
+                        Order Production
+                    </button>
+                </td>
+            </tr>
+        }
+        </tbody>
+    </table>
+}
+
+@code {
+    private IEnumerable<Recipe>? _recipes;
+
+    protected override async Task OnInitializedAsync()
+    {
+        _recipes = await Catalog.GetAllRecipesAsync();
+        Logger.LogInformation("Loaded {Count} recipes into UI.", _recipes?.Count() ?? 0);
+    }
+    
+    private async Task OnOrderClicked(string recipeId)
+    {
+        var correlationId = Guid.NewGuid();
+        
+        var command = new ManufactureComponentCommand(
+            CorrelationId: correlationId,
+            ComponentId: recipeId,
+            Amount: 1 
+        );
+
+        Logger.LogInformation("[HQ] Sending production command for {RecipeId} (ID: {CorrelationId})", 
+            recipeId, correlationId);
+
+        await Bus.Publish(command);
+    }
+}

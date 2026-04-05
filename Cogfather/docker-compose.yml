@@ -1,0 +1,20 @@
+services:
+  rabbitmq:
+    image: rabbitmq:4.2.5-management-alpine
+    container_name: cogfather-rabbitmq
+    ports:
+      - "5672:5672" 
+      - "15672:15672" 
+    environment:
+      RABBITMQ_DEFAULT_USER: guest
+      RABBITMQ_DEFAULT_PASS: guest
+
+  postgres:
+    image: postgres:18.3-alpine3.23
+    container_name: cogfather-postgres
+    ports:
+      - "5432:5432"
+    environment:
+      POSTGRES_USER: cogfather
+      POSTGRES_PASSWORD: secretpassword
+      POSTGRES_DB: hq_database

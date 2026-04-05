@@ -21,4 +21,12 @@
       <ProjectReference Include="..\Cogfather.Node.Infrastructure\Cogfather.Node.Infrastructure.csproj" />
     </ItemGroup>
 
+    <ItemGroup>
+      <PackageReference Include="JetBrains.Annotations" Version="2025.2.4" />
+      <PackageReference Include="Microsoft.Extensions.Hosting" Version="10.0.5" />
+      <PackageReference Include="Serilog.Extensions.Hosting" Version="10.0.0" />
+      <PackageReference Include="Serilog.Settings.Configuration" Version="10.0.0" />
+      <PackageReference Include="Serilog.Sinks.Console" Version="6.1.1" />
+    </ItemGroup>
+
 </Project>
