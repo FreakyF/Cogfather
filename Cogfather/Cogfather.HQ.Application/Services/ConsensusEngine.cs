@@ -6,9 +6,9 @@ using Cogfather.HQ.Domain.ValueObjects;
 namespace Cogfather.HQ.Application.Services;
 
 /// <summary>
-/// Byzantine Fault Tolerant consensus engine.
-/// Requires a strict majority of more than 2/3 of reports to agree for a verdict.
-/// With n = 3f+1 nodes, tolerates up to f Byzantine faults.
+///     Byzantine Fault Tolerant consensus engine.
+///     Requires a strict majority of more than 2/3 of reports to agree for a verdict.
+///     With n = 3f+1 nodes, tolerates up to f Byzantine faults.
 /// </summary>
 public class ConsensusEngine : IConsensusEngine
 {

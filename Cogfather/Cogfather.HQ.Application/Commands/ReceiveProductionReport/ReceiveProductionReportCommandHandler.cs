@@ -8,10 +8,10 @@ namespace Cogfather.HQ.Application.Commands.ReceiveProductionReport;
 
 public class ReceiveProductionReportCommandHandler : IRequestHandler<ReceiveProductionReportCommand>
 {
-    private readonly IProductionReportRepository _reportRepository;
     private readonly IConsensusEngine _consensusEngine;
     private readonly IConsensusNotifier _notifier;
     private readonly QuorumReportCollector _quorumCollector;
+    private readonly IProductionReportRepository _reportRepository;
 
     public ReceiveProductionReportCommandHandler(
         IProductionReportRepository reportRepository,

@@ -8,8 +8,8 @@ namespace Cogfather.HQ.Application.Commands.IssueProductionOrder;
 public class IssueProductionOrderCommandHandler : IRequestHandler<IssueProductionOrderCommand, Guid>
 {
     private readonly IProductionCatalog _catalog;
-    private readonly IProductionOrderRepository _orderRepository;
     private readonly IOrderDispatcher _dispatcher;
+    private readonly IProductionOrderRepository _orderRepository;
 
     public IssueProductionOrderCommandHandler(
         IProductionCatalog catalog,

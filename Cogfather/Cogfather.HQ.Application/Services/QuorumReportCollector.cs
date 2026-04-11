@@ -5,9 +5,9 @@ using Cogfather.HQ.Domain.Enums;
 namespace Cogfather.HQ.Application.Services;
 
 /// <summary>
-/// Determines whether a sufficient quorum of production reports has been collected
-/// to proceed with BFT consensus evaluation.
-/// In a system with n = 3f+1 nodes, a quorum requires at least 2f+1 reports.
+///     Determines whether a sufficient quorum of production reports has been collected
+///     to proceed with BFT consensus evaluation.
+///     In a system with n = 3f+1 nodes, a quorum requires at least 2f+1 reports.
 /// </summary>
 public class QuorumReportCollector
 {
