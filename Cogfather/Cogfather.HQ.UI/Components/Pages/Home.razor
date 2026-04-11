@@ -1,8 +1,8 @@
 ﻿@page "/"
 @using Cogfather.HQ.Application.Interfaces
 @using Cogfather.HQ.Domain.Entities
-@using Cogfather.Contracts.Commands 
-@using MassTransit         
+@using Cogfather.Contracts.Commands
+@using MassTransit
 @inject IProductionCatalog Catalog
 @inject ILogger<Home> Logger
 @inject IBus Bus
@@ -57,20 +57,21 @@ else
         _recipes = await Catalog.GetAllRecipesAsync();
         Logger.LogInformation("Loaded {Count} recipes into UI.", _recipes?.Count() ?? 0);
     }
-    
+
     private async Task OnOrderClicked(string recipeId)
     {
         var correlationId = Guid.NewGuid();
-        
+
         var command = new ManufactureComponentCommand(
-            CorrelationId: correlationId,
-            ComponentId: recipeId,
-            Amount: 1 
+            correlationId,
+            recipeId,
+            1
         );
 
-        Logger.LogInformation("[HQ] Sending production command for {RecipeId} (ID: {CorrelationId})", 
+        Logger.LogInformation("[HQ] Sending production command for {RecipeId} (ID: {CorrelationId})",
             recipeId, correlationId);
 
         await Bus.Publish(command);
     }
+
 }

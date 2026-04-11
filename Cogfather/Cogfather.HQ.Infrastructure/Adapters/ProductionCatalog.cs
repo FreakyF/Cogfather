@@ -16,10 +16,10 @@ internal class JsonIngredientDto
 internal class JsonRecipeDto
 {
     public double Energy { get; set; }
-    
+
     [JsonConverter(typeof(EmptyObjectOrArrayConverter<List<JsonIngredientDto>>))]
     public List<JsonIngredientDto>? Ingredients { get; set; }
-    
+
     [JsonConverter(typeof(EmptyObjectOrArrayConverter<List<JsonIngredientDto>>))]
     public List<JsonIngredientDto>? Products { get; set; }
 }
@@ -31,16 +31,19 @@ public class EmptyObjectOrArrayConverter<T> : JsonConverter<T> where T : class, 
         if (reader.TokenType != JsonTokenType.StartObject) return JsonSerializer.Deserialize<T>(ref reader, options);
         using var doc = JsonDocument.ParseValue(ref reader);
         return new T();
-
     }
 
-    public override void Write(Utf8JsonWriter writer, T value, JsonSerializerOptions options) 
-        => JsonSerializer.Serialize(writer, value, options);
+    public override void Write(Utf8JsonWriter writer, T value, JsonSerializerOptions options)
+    {
+        JsonSerializer.Serialize(writer, value, options);
+    }
 }
 
 [JsonSerializable(typeof(Dictionary<string, JsonRecipeDto>))]
 [JsonSourceGenerationOptions(PropertyNameCaseInsensitive = true)]
-internal partial class CatalogJsonContext : JsonSerializerContext { }
+internal partial class CatalogJsonContext : JsonSerializerContext
+{
+}
 
 public class ProductionCatalog : IProductionCatalog
 {
@@ -50,7 +53,7 @@ public class ProductionCatalog : IProductionCatalog
 
     public ProductionCatalog(IConfiguration configuration)
     {
-        var relativePath = configuration["Catalog:RecipesFilePath"] 
+        var relativePath = configuration["Catalog:RecipesFilePath"]
                            ?? throw new InvalidOperationException("Missing Catalog:RecipesFilePath");
         _filePath = Path.Combine(AppContext.BaseDirectory, relativePath);
     }
@@ -77,25 +80,28 @@ public class ProductionCatalog : IProductionCatalog
             if (!File.Exists(_filePath)) throw new FileNotFoundException(_filePath);
 
             await using var stream = File.OpenRead(_filePath);
-            
+
             var rawData = await JsonSerializer.DeserializeAsync(
-                stream, 
-                CatalogJsonContext.Default.DictionaryStringJsonRecipeDto, 
+                stream,
+                CatalogJsonContext.Default.DictionaryStringJsonRecipeDto,
                 ct);
-            
+
             _cache = rawData?
                 .ToDictionary(
                     kvp => kvp.Key,
                     kvp => new Recipe(
-                        id: kvp.Key,
-                        energy: kvp.Value.Energy,
-                        ingredients: kvp.Value.Ingredients?.Select(i => new ProductionItem(i.Id, i.Amount)) ?? [],
-                        products: kvp.Value.Products?.Select(p => new ProductionItem(p.Id, p.Amount)) ?? []
+                        kvp.Key,
+                        kvp.Value.Energy,
+                        kvp.Value.Ingredients?.Select(i => new ProductionItem(i.Id, i.Amount)) ?? [],
+                        kvp.Value.Products?.Select(p => new ProductionItem(p.Id, p.Amount)) ?? []
                     )
                 ) ?? [];
 
             return _cache;
         }
-        finally { _semaphore.Release(); }
+        finally
+        {
+            _semaphore.Release();
+        }
     }
 }

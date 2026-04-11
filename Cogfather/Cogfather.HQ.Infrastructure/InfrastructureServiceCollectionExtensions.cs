@@ -14,7 +14,7 @@ public static class InfrastructureServiceCollectionExtensions
         services.AddMassTransit(x =>
         {
             x.AddConsumer<Consumers.ComponentManufacturedConsumer>();
-            
+
             x.UsingRabbitMq((context, cfg) =>
             {
                 cfg.Host("localhost", "/", h =>
@@ -22,7 +22,7 @@ public static class InfrastructureServiceCollectionExtensions
                     h.Username("guest");
                     h.Password("guest");
                 });
-                
+
                 cfg.ConfigureEndpoints(context);
             });
         });

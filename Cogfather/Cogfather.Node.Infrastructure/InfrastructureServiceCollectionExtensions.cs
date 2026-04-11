@@ -25,15 +25,14 @@ public static class InfrastructureServiceCollectionExtensions
                     return options;
                 });
 
-                cfg.Host("localhost", "/", h => {
+                cfg.Host("localhost", "/", h =>
+                {
                     h.Username("guest");
                     h.Password("guest");
                 });
 
-                cfg.ReceiveEndpoint($"manufacture-component-{nodeId}", e =>
-                {
-                    e.ConfigureConsumer<ManufactureComponentConsumer>(context);
-                });
+                cfg.ReceiveEndpoint($"manufacture-component-{nodeId}",
+                    e => { e.ConfigureConsumer<ManufactureComponentConsumer>(context); });
             });
         });
 

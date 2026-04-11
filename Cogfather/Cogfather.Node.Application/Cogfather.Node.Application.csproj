@@ -7,12 +7,12 @@
     </PropertyGroup>
 
     <ItemGroup>
-      <ProjectReference Include="..\Cogfather.Contracts\Cogfather.Contracts.csproj" />
-      <ProjectReference Include="..\Cogfather.Node.Domain\Cogfather.Node.Domain.csproj" />
+        <ProjectReference Include="..\Cogfather.Contracts\Cogfather.Contracts.csproj"/>
+        <ProjectReference Include="..\Cogfather.Node.Domain\Cogfather.Node.Domain.csproj"/>
     </ItemGroup>
 
     <ItemGroup>
-      <PackageReference Include="JetBrains.Annotations" Version="2025.2.4" />
+        <PackageReference Include="JetBrains.Annotations" Version="2025.2.4"/>
     </ItemGroup>
 
 </Project>

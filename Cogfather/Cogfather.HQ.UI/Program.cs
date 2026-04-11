@@ -1,6 +1,6 @@
 using Cogfather.HQ.UI.Components;
-using Cogfather.HQ.Infrastructure; 
-using Serilog;                     
+using Cogfather.HQ.Infrastructure;
+using Serilog;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -22,7 +22,7 @@ var app = builder.Build();
 
 if (!app.Environment.IsDevelopment())
 {
-    app.UseExceptionHandler("/Error", createScopeForErrors: true);
+    app.UseExceptionHandler("/Error", true);
     app.UseHsts();
 }
 

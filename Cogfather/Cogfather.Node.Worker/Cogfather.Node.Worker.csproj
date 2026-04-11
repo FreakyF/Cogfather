@@ -11,22 +11,22 @@
     </PropertyGroup>
 
     <ItemGroup>
-      <Content Include="..\.dockerignore">
-        <Link>.dockerignore</Link>
-      </Content>
+        <Content Include="..\.dockerignore">
+            <Link>.dockerignore</Link>
+        </Content>
     </ItemGroup>
 
     <ItemGroup>
-      <ProjectReference Include="..\Cogfather.Node.Application\Cogfather.Node.Application.csproj" />
-      <ProjectReference Include="..\Cogfather.Node.Infrastructure\Cogfather.Node.Infrastructure.csproj" />
+        <ProjectReference Include="..\Cogfather.Node.Application\Cogfather.Node.Application.csproj"/>
+        <ProjectReference Include="..\Cogfather.Node.Infrastructure\Cogfather.Node.Infrastructure.csproj"/>
     </ItemGroup>
 
     <ItemGroup>
-      <PackageReference Include="JetBrains.Annotations" Version="2025.2.4" />
-      <PackageReference Include="Microsoft.Extensions.Hosting" Version="10.0.5" />
-      <PackageReference Include="Serilog.Extensions.Hosting" Version="10.0.0" />
-      <PackageReference Include="Serilog.Settings.Configuration" Version="10.0.0" />
-      <PackageReference Include="Serilog.Sinks.Console" Version="6.1.1" />
+        <PackageReference Include="JetBrains.Annotations" Version="2025.2.4"/>
+        <PackageReference Include="Microsoft.Extensions.Hosting" Version="10.0.5"/>
+        <PackageReference Include="Serilog.Extensions.Hosting" Version="10.0.0"/>
+        <PackageReference Include="Serilog.Settings.Configuration" Version="10.0.0"/>
+        <PackageReference Include="Serilog.Sinks.Console" Version="6.1.1"/>
     </ItemGroup>
 
 </Project>
