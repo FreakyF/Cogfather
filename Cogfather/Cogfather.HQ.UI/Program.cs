@@ -1,3 +1,4 @@
+using Cogfather.HQ.Application.Extensions;
 using Cogfather.HQ.Infrastructure;
 using Cogfather.HQ.UI.Components;
 using Serilog;
@@ -16,7 +17,8 @@ builder.Host.UseSerilog();
 builder.Services.AddRazorComponents()
     .AddInteractiveServerComponents();
 
-builder.Services.AddHqInfrastructure();
+builder.Services.AddApplicationServices();
+builder.Services.AddInfrastructureServices(builder.Configuration);
 
 var app = builder.Build();
 
