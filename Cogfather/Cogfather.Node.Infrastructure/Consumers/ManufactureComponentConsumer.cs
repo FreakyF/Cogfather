@@ -15,15 +15,6 @@ public partial class ManufactureComponentConsumer(
 {
     private readonly string _nodeId = config["NodeSettings:NodeId"] ?? "Unknown-Node";
 
-    [LoggerMessage(Level = LogLevel.Information,
-        Message = "[{Node}] Received order: {Amount}x {ComponentId} (Task: {CorrelationId})")]
-    private static partial void LogOrderReceived(ILogger logger, string node, double amount, string componentId,
-        Guid correlationId);
-
-    [LoggerMessage(Level = LogLevel.Information,
-        Message = "[{Node}] Production finished for {CorrelationId}. Reporting back.")]
-    private static partial void LogProductionFinished(ILogger logger, string node, Guid correlationId);
-
     public async Task Consume(ConsumeContext<ManufactureComponentCommand> context)
     {
         var (correlationId, componentId, amount) = context.Message;
@@ -45,4 +36,13 @@ public partial class ManufactureComponentConsumer(
             DateTime.UtcNow
         ));
     }
+
+    [LoggerMessage(Level = LogLevel.Information,
+        Message = "[{Node}] Received order: {Amount}x {ComponentId} (Task: {CorrelationId})")]
+    private static partial void LogOrderReceived(ILogger logger, string node, double amount, string componentId,
+        Guid correlationId);
+
+    [LoggerMessage(Level = LogLevel.Information,
+        Message = "[{Node}] Production finished for {CorrelationId}. Reporting back.")]
+    private static partial void LogProductionFinished(ILogger logger, string node, Guid correlationId);
 }

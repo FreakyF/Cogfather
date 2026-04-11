@@ -1,5 +1,5 @@
-using Cogfather.HQ.UI.Components;
 using Cogfather.HQ.Infrastructure;
+using Cogfather.HQ.UI.Components;
 using Serilog;
 
 var builder = WebApplication.CreateBuilder(args);

@@ -1,7 +1,8 @@
-﻿using MassTransit;
-using Microsoft.Extensions.DependencyInjection;
-using Cogfather.HQ.Application.Interfaces;
+﻿using Cogfather.HQ.Application.Interfaces;
 using Cogfather.HQ.Infrastructure.Adapters;
+using Cogfather.HQ.Infrastructure.Consumers;
+using MassTransit;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace Cogfather.HQ.Infrastructure;
 
@@ -13,7 +14,7 @@ public static class InfrastructureServiceCollectionExtensions
 
         services.AddMassTransit(x =>
         {
-            x.AddConsumer<Consumers.ComponentManufacturedConsumer>();
+            x.AddConsumer<ComponentManufacturedConsumer>();
 
             x.UsingRabbitMq((context, cfg) =>
             {

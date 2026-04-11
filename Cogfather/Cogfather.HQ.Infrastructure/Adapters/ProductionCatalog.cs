@@ -1,9 +1,8 @@
 using System.Text.Json;
 using System.Text.Json.Serialization;
-using Microsoft.Extensions.Configuration;
 using Cogfather.HQ.Application.Interfaces;
-using Cogfather.HQ.Domain.Entities;
 using Cogfather.HQ.Domain.ValueObjects;
+using Microsoft.Extensions.Configuration;
 
 namespace Cogfather.HQ.Infrastructure.Adapters;
 
@@ -48,8 +47,8 @@ internal partial class CatalogJsonContext : JsonSerializerContext
 public class ProductionCatalog : IProductionCatalog
 {
     private readonly string _filePath;
-    private Dictionary<string, Recipe>? _cache;
     private readonly SemaphoreSlim _semaphore = new(1, 1);
+    private Dictionary<string, Recipe>? _cache;
 
     public ProductionCatalog(IConfiguration configuration)
     {
@@ -92,8 +91,8 @@ public class ProductionCatalog : IProductionCatalog
                     kvp => new Recipe(
                         kvp.Key,
                         kvp.Value.Energy,
-                        kvp.Value.Ingredients?.Select(i => new ProductionItem(i.Id, i.Amount)) ?? [],
-                        kvp.Value.Products?.Select(p => new ProductionItem(p.Id, p.Amount)) ?? []
+                        kvp.Value.Ingredients?.Select(i => new Ingredient(i.Id, i.Amount)) ?? [],
+                        kvp.Value.Products?.Select(p => new Product(p.Id, p.Amount)) ?? []
                     )
                 ) ?? [];
 

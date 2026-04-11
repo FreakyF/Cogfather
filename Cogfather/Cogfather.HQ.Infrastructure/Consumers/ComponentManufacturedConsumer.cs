@@ -9,11 +9,6 @@ namespace Cogfather.HQ.Infrastructure.Consumers;
 public partial class ComponentManufacturedConsumer(ILogger<ComponentManufacturedConsumer> logger)
     : IConsumer<ComponentManufacturedEvent>
 {
-    [LoggerMessage(Level = LogLevel.Information,
-        Message = "[HQ] Report received from {NodeId}: {Amount}x {ComponentId} (Hash: {Hash})")]
-    private static partial void LogReportReceived(ILogger logger, string nodeId, double amount, string componentId,
-        string hash);
-
     public Task Consume(ConsumeContext<ComponentManufacturedEvent> context)
     {
         var e = context.Message;
@@ -21,4 +16,9 @@ public partial class ComponentManufacturedConsumer(ILogger<ComponentManufactured
 
         return Task.CompletedTask;
     }
+
+    [LoggerMessage(Level = LogLevel.Information,
+        Message = "[HQ] Report received from {NodeId}: {Amount}x {ComponentId} (Hash: {Hash})")]
+    private static partial void LogReportReceived(ILogger logger, string nodeId, double amount, string componentId,
+        string hash);
 }

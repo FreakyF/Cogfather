@@ -1,8 +1,8 @@
 namespace Cogfather.Contracts.Messages.Orders;
 
 /// <summary>
-/// Message sent by HQ to all Worker Nodes to initiate a production run.
-/// Published once per order; all nodes receive via fanout.
+///     Message sent by HQ to all Worker Nodes to initiate a production run.
+///     Published once per order; all nodes receive via fanout.
 /// </summary>
 public sealed record ProductionOrderMessage(
     /// <summary>Unique ID of this order.</summary>

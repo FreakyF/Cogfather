@@ -1,8 +1,10 @@
 ﻿using System.Text.Json.Serialization.Metadata;
 using Cogfather.Node.Infrastructure.Consumers;
 using MassTransit;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Configuration; // Dodaj to!
+
+// Dodaj to!
 
 namespace Cogfather.Node.Infrastructure;
 

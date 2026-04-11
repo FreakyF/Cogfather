@@ -1,8 +1,8 @@
 namespace Cogfather.Contracts.Messages.Reports;
 
 /// <summary>
-/// Sent by a Node after completing (or failing) a production run.
-/// HQ groups these by CorrelationId for consensus evaluation.
+///     Sent by a Node after completing (or failing) a production run.
+///     HQ groups these by CorrelationId for consensus evaluation.
 /// </summary>
 public sealed record ProductionReportMessage(
     /// <summary>Unique ID of this report.</summary>
