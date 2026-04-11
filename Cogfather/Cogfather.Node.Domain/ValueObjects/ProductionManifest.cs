@@ -1,5 +1,3 @@
-using System;
-
 namespace Cogfather.Node.Domain.ValueObjects;
 
 public record ProductionManifest(Guid CorrelationId, string ComponentId, int Amount)
@@ -12,7 +10,7 @@ public record ProductionManifest(Guid CorrelationId, string ComponentId, int Amo
             throw new ArgumentException("ComponentId cannot be null or whitespace.", nameof(componentId));
         if (amount <= 0)
             throw new ArgumentOutOfRangeException(nameof(amount), "Amount must be greater than zero.");
-            
+
         return new ProductionManifest(correlationId, componentId, amount);
     }
 }

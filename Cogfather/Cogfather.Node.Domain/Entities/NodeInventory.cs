@@ -1,7 +1,4 @@
-using System;
 using System.Collections.Concurrent;
-using System.Collections.Generic;
-using System.Linq;
 
 namespace Cogfather.Node.Domain.Entities;
 
@@ -15,7 +12,7 @@ public class NodeInventory
             throw new ArgumentException("ComponentId cannot be null or whitespace.", nameof(componentId));
         if (amount < 0)
             throw new ArgumentOutOfRangeException(nameof(amount), "Amount cannot be negative.");
-            
+
         _items.AddOrUpdate(componentId, amount, (_, existing) => existing + amount);
     }
 
@@ -25,13 +22,13 @@ public class NodeInventory
             throw new ArgumentException("ComponentId cannot be null or whitespace.", nameof(componentId));
         if (amount < 0)
             throw new ArgumentOutOfRangeException(nameof(amount), "Amount cannot be negative.");
-        
+
         while (true)
         {
-            if (!_items.TryGetValue(componentId, out int current) || current < amount)
+            if (!_items.TryGetValue(componentId, out var current) || current < amount)
                 return false;
 
-            int newValue = current - amount;
+            var newValue = current - amount;
             if (_items.TryUpdate(componentId, newValue, current))
                 return true;
         }
@@ -41,10 +38,10 @@ public class NodeInventory
     {
         if (string.IsNullOrWhiteSpace(componentId))
             throw new ArgumentException("ComponentId cannot be null or whitespace.", nameof(componentId));
-            
-        return _items.TryGetValue(componentId, out int count) ? count : 0;
+
+        return _items.TryGetValue(componentId, out var count) ? count : 0;
     }
-    
+
     public IReadOnlyDictionary<string, int> GetAll()
     {
         return _items.ToDictionary(kvp => kvp.Key, kvp => kvp.Value);

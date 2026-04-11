@@ -1,4 +1,3 @@
-using System.Threading.Tasks;
 using Cogfather.Node.Domain.Enums;
 using Cogfather.Node.Domain.Records;
 using Cogfather.Node.Domain.ValueObjects;
@@ -9,7 +8,7 @@ public interface IFaultInjector
 {
     FaultMode CurrentMode { get; }
     void SetFaultMode(FaultMode mode);
-    
+
     Task ApplyDelayIfNeededAsync();
     bool ShouldSilentlyFail();
     ProductionManifest ManipulateManifest(ProductionManifest original);
