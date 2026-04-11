@@ -1,0 +1,41 @@
+using Cogfather.HQ.Application.Interfaces;
+using Cogfather.HQ.Application.Services;
+using Cogfather.HQ.Domain.Entities;
+using Cogfather.HQ.Domain.Interfaces;
+using MediatR;
+
+namespace Cogfather.HQ.Application.Commands.ReceiveProductionReport;
+
+public class ReceiveProductionReportCommandHandler : IRequestHandler<ReceiveProductionReportCommand>
+{
+    private readonly IProductionReportRepository _reportRepository;
+    private readonly IConsensusEngine _consensusEngine;
+    private readonly IConsensusNotifier _notifier;
+    private readonly QuorumReportCollector _quorumCollector;
+
+    public ReceiveProductionReportCommandHandler(
+        IProductionReportRepository reportRepository,
+        IConsensusEngine consensusEngine,
+        IConsensusNotifier notifier,
+        QuorumReportCollector quorumCollector)
+    {
+        _reportRepository = reportRepository;
+        _consensusEngine = consensusEngine;
+        _notifier = notifier;
+        _quorumCollector = quorumCollector;
+    }
+
+    public async Task Handle(ReceiveProductionReportCommand request, CancellationToken cancellationToken)
+    {
+        var report = new ProductionReport(request.NodeId, request.RecipeId, request.Success);
+        await _reportRepository.AddAsync(report, cancellationToken);
+
+        var reports = (await _reportRepository.GetByRecipeIdAsync(request.RecipeId, cancellationToken)).ToList();
+
+        if (!await _quorumCollector.HasQuorumAsync(reports, cancellationToken))
+            return;
+
+        var result = await _consensusEngine.EvaluateAsync(request.RecipeId, reports);
+        await _notifier.NotifyAsync(result, cancellationToken);
+    }
+}

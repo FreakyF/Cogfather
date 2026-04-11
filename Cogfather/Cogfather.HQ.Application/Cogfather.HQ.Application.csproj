@@ -12,7 +12,9 @@
     </ItemGroup>
 
     <ItemGroup>
+        <PackageReference Include="FluentValidation.DependencyInjectionExtensions" Version="11.*"/>
         <PackageReference Include="JetBrains.Annotations" Version="2025.2.4"/>
+        <PackageReference Include="MediatR" Version="12.*"/>
     </ItemGroup>
 
 </Project>
