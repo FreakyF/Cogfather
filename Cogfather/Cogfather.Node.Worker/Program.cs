@@ -14,7 +14,7 @@ Log.Logger = new LoggerConfiguration()
     .CreateLogger();
 builder.Services.AddSerilog();
 
-builder.Services.AddNodeInfrastructure();
+builder.Services.AddNodeInfrastructureServices(builder.Configuration);
 
 var host = builder.Build();
 
