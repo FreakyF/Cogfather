@@ -14,7 +14,7 @@ public class ExecuteProductionOrderCommandHandler : IRequestHandler<ExecuteProdu
     private readonly IManifestHashService _hashService;
     private readonly IInventoryStore _inventoryStore;
     private readonly ILogger<ExecuteProductionOrderCommandHandler> _logger;
-    private readonly string _nodeId;
+    private readonly NodeIdentity _nodeIdentity;
     private readonly IReportPublisher _reportPublisher;
 
     public ExecuteProductionOrderCommandHandler(
@@ -23,6 +23,7 @@ public class ExecuteProductionOrderCommandHandler : IRequestHandler<ExecuteProdu
         IReportPublisher reportPublisher,
         IManifestHashService hashService,
         IFaultInjector faultInjector,
+        NodeIdentity nodeIdentity,
         ILogger<ExecuteProductionOrderCommandHandler> logger)
     {
         _executionService = executionService;
@@ -30,8 +31,8 @@ public class ExecuteProductionOrderCommandHandler : IRequestHandler<ExecuteProdu
         _reportPublisher = reportPublisher;
         _hashService = hashService;
         _faultInjector = faultInjector;
+        _nodeIdentity = nodeIdentity;
         _logger = logger;
-        _nodeId = Environment.GetEnvironmentVariable("NODE_ID") ?? "UnknownNode";
     }
 
     public async Task Handle(ExecuteProductionOrderCommand request, CancellationToken cancellationToken)
@@ -56,7 +57,7 @@ public class ExecuteProductionOrderCommandHandler : IRequestHandler<ExecuteProdu
 
         await _reportPublisher.PublishProductionReportAsync(
             request.CorrelationId,
-            _nodeId,
+            _nodeIdentity.NodeId,
             result.ComponentId,
             result.AmountProduced,
             result.Success,

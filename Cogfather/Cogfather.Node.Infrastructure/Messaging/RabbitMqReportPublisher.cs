@@ -1,6 +1,7 @@
 using System.Security.Cryptography;
 using System.Text;
 using System.Text.Json;
+using Cogfather.Contracts;
 using Cogfather.Contracts.Messages.Reports;
 using Cogfather.Node.Application.Interfaces;
 using Cogfather.Node.Infrastructure.Services;
@@ -47,7 +48,8 @@ public class RabbitMqReportPublisher : IReportPublisher
                 !success,
                 DateTimeOffset.UtcNow);
 
-            var body = Encoding.UTF8.GetBytes(JsonSerializer.Serialize(message));
+            var body = Encoding.UTF8.GetBytes(JsonSerializer.Serialize(message,
+                CogfatherJsonContext.Default.ProductionReportMessage));
             var properties = new BasicProperties { Persistent = true };
 
             await channel.BasicPublishAsync(_options.ReportsExchange, string.Empty, true, properties, body);

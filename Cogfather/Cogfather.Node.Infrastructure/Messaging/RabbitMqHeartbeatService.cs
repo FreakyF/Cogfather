@@ -1,6 +1,7 @@
 using System.Security.Cryptography;
 using System.Text;
 using System.Text.Json;
+using Cogfather.Contracts;
 using Cogfather.Contracts.Messages.Heartbeat;
 using Cogfather.Node.Application.Interfaces;
 using Cogfather.Node.Infrastructure.Services;
@@ -74,7 +75,8 @@ public class RabbitMqHeartbeatService : BackgroundService
                 DateTimeOffset.UtcNow,
                 snapshot);
 
-            var body = Encoding.UTF8.GetBytes(JsonSerializer.Serialize(message));
+            var body = Encoding.UTF8.GetBytes(JsonSerializer.Serialize(message,
+                CogfatherJsonContext.Default.NodeHeartbeatMessage));
             var properties = new BasicProperties { Persistent = true };
 
             await channel.BasicPublishAsync(string.Empty, _options.HeartbeatQueue, true, properties, body,

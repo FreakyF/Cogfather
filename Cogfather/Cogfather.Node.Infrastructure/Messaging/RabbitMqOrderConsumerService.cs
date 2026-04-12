@@ -1,5 +1,6 @@
 using System.Text;
 using System.Text.Json;
+using Cogfather.Contracts;
 using Cogfather.Contracts.Messages.Orders;
 using Cogfather.Node.Application.Commands;
 using MediatR;
@@ -56,7 +57,8 @@ public class RabbitMqOrderConsumerService : BackgroundService
 
             try
             {
-                var order = JsonSerializer.Deserialize<ProductionOrderMessage>(messageString);
+                var order = JsonSerializer.Deserialize(messageString,
+                    CogfatherJsonContext.Default.ProductionOrderMessage);
                 if (order != null)
                 {
                     using var scope = _serviceScopeFactory.CreateScope();

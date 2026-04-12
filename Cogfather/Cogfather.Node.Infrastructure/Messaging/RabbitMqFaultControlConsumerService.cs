@@ -1,6 +1,7 @@
 using System.Security.Cryptography;
 using System.Text;
 using System.Text.Json;
+using Cogfather.Contracts;
 using Cogfather.Contracts.Messages.Faults;
 using Cogfather.Node.Domain.Enums;
 using Cogfather.Node.Domain.Interfaces;
@@ -57,7 +58,8 @@ public class RabbitMqFaultControlConsumerService : BackgroundService
 
             try
             {
-                var message = JsonSerializer.Deserialize<FaultControlMessage>(messageString);
+                var message =
+                    JsonSerializer.Deserialize(messageString, CogfatherJsonContext.Default.FaultControlMessage);
                 if (message != null)
                 {
                     var faultMode = (FaultMode)(int)message.FaultMode;
