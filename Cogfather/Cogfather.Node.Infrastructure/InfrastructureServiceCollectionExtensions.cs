@@ -1,42 +1,51 @@
-﻿using System.Text.Json.Serialization.Metadata;
-using Cogfather.Node.Infrastructure.Consumers;
-using MassTransit;
+﻿using Cogfather.Node.Application.Extensions;
+using Cogfather.Node.Application.Interfaces;
+using Cogfather.Node.Infrastructure.Messaging;
+using Cogfather.Node.Infrastructure.Services;
+using Cogfather.Node.Infrastructure.Storage;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
-
-// Dodaj to!
+using Microsoft.Extensions.Logging;
+using RabbitMQ.Client;
 
 namespace Cogfather.Node.Infrastructure;
 
 public static class InfrastructureServiceCollectionExtensions
 {
-    public static IServiceCollection AddNodeInfrastructure(this IServiceCollection services)
+    public static IServiceCollection AddNodeInfrastructureServices(this IServiceCollection services,
+        IConfiguration configuration)
     {
-        services.AddMassTransit(x =>
+        services.AddNodeApplicationServices(configuration);
+
+        services.Configure<NodeRabbitMqOptions>(configuration.GetSection("RabbitMq"));
+
+        services.AddSingleton<IConnectionFactory>(sp =>
         {
-            x.AddConsumer<ManufactureComponentConsumer>();
-
-            x.UsingRabbitMq((context, cfg) =>
+            var options = configuration.GetSection("RabbitMq").Get<NodeRabbitMqOptions>() ?? new NodeRabbitMqOptions();
+            return new ConnectionFactory
             {
-                var config = context.GetRequiredService<IConfiguration>();
-                var nodeId = config["NodeSettings:NodeId"] ?? "GenericNode";
-
-                cfg.ConfigureJsonSerializerOptions(options =>
-                {
-                    options.TypeInfoResolver = new DefaultJsonTypeInfoResolver();
-                    return options;
-                });
-
-                cfg.Host("localhost", "/", h =>
-                {
-                    h.Username("guest");
-                    h.Password("guest");
-                });
-
-                cfg.ReceiveEndpoint($"manufacture-component-{nodeId}",
-                    e => { e.ConfigureConsumer<ManufactureComponentConsumer>(context); });
-            });
+                HostName = options.Host,
+                Port = options.Port,
+                UserName = options.Username,
+                Password = options.Password
+            };
         });
+
+        services.AddSingleton<IConnection>(sp =>
+        {
+            var factory = sp.GetRequiredService<IConnectionFactory>();
+            var logger = sp.GetRequiredService<ILogger<IConnection>>();
+            var policy = PollyPolicies.GetRetryPolicy(logger);
+
+            return policy.ExecuteAsync(async () => await factory.CreateConnectionAsync()).GetAwaiter().GetResult();
+        });
+
+        services.AddSingleton<IInventoryStore, InMemoryInventoryStore>();
+        services.AddScoped<IReportPublisher, RabbitMqReportPublisher>();
+
+        services.AddHostedService<RabbitMqOrderConsumerService>();
+        services.AddHostedService<RabbitMqHeartbeatService>();
+        services.AddHostedService<RabbitMqFaultControlConsumerService>();
 
         return services;
     }
