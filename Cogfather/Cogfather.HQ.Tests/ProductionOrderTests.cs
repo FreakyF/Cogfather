@@ -41,7 +41,8 @@ public class ProductionOrderTests
     [InlineData(ProductionOrderStatus.Completed)]
     [InlineData(ProductionOrderStatus.Failed)]
     [InlineData(ProductionOrderStatus.Cancelled)]
-    public void StartProduction_FromNonPendingStatus_ThrowsInvalidOperationException(ProductionOrderStatus initialStatus)
+    public void StartProduction_FromNonPendingStatus_ThrowsInvalidOperationException(
+        ProductionOrderStatus initialStatus)
     {
         // Arrange
         var order = new ProductionOrder("test", 10);
@@ -71,7 +72,8 @@ public class ProductionOrderTests
     [InlineData(ProductionOrderStatus.Completed)]
     [InlineData(ProductionOrderStatus.Failed)]
     [InlineData(ProductionOrderStatus.Cancelled)]
-    public void CompleteProduction_FromNonInProgressStatus_ThrowsInvalidOperationException(ProductionOrderStatus initialStatus)
+    public void CompleteProduction_FromNonInProgressStatus_ThrowsInvalidOperationException(
+        ProductionOrderStatus initialStatus)
     {
         // Arrange
         var order = new ProductionOrder("test", 10);
@@ -119,12 +121,13 @@ public class ProductionOrderTests
     [Theory]
     [InlineData(ProductionOrderStatus.Completed)]
     [InlineData(ProductionOrderStatus.Failed)]
-    public void CancelProduction_FromNonCancellableStatus_ThrowsInvalidOperationException(ProductionOrderStatus initialStatus)
+    public void CancelProduction_FromNonCancellableStatus_ThrowsInvalidOperationException(
+        ProductionOrderStatus initialStatus)
     {
         // Arrange
         var order = new ProductionOrder("test", 10);
         order.GetType().GetProperty(nameof(ProductionOrder.Status))!.SetValue(order, initialStatus);
-        
+
         // Act & Assert
         Assert.Throws<InvalidOperationException>(() => order.CancelProduction());
     }
