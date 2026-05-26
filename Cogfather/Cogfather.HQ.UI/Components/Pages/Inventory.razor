@@ -2,16 +2,14 @@
 @attribute [Authorize]
 @rendermode InteractiveServer
 @inject ISender Sender
-@implements IAsyncDisposable
-@using Microsoft.AspNetCore.SignalR.Client
+@inject Cogfather.HQ.UI.Services.ConsensusEventService ConsensusEvents
+@implements IDisposable
 
 <PageTitle>Inventory — Cogfather HQ</PageTitle>
 
 <div class="d-flex justify-content-between align-items-center mb-4">
     <h1 class="mb-0">HQ Inventory</h1>
-    <span class="badge @(_hubConnected ? "bg-success" : "bg-secondary")">
-        @(_hubConnected ? "Live" : "Offline")
-    </span>
+    <span class="badge bg-success">Live</span>
 </div>
 
 @if (_loading)
@@ -60,33 +58,22 @@ else
 @code {
     private bool _loading = true;
     private IReadOnlyDictionary<string, double> _items = new Dictionary<string, double>();
-    private bool _hubConnected;
-
-    private HubConnection? _hubConnection;
-
-    [Inject] private NavigationManager NavManager { get; set; } = default!;
 
     protected override async Task OnInitializedAsync()
     {
+        ConsensusEvents.OnConsensusReached += HandleConsensus;
         await LoadInventory();
         _loading = false;
+    }
 
-        _hubConnection = new HubConnectionBuilder()
-            .WithUrl(NavManager.ToAbsoluteUri("/hubs/consensus"))
-            .WithAutomaticReconnect()
-            .Build();
-
-        _hubConnection.On<ConsensusResult>("ConsensusReached", async _ =>
+    private async void HandleConsensus(ConsensusResult _)
+    {
+        try
         {
             await LoadInventory();
             await InvokeAsync(StateHasChanged);
-        });
-
-        _hubConnection.Reconnected += _ => { _hubConnected = true; return InvokeAsync(StateHasChanged); };
-        _hubConnection.Closed += _ => { _hubConnected = false; return InvokeAsync(StateHasChanged); };
-
-        await _hubConnection.StartAsync();
-        _hubConnected = _hubConnection.State == HubConnectionState.Connected;
+        }
+        catch (ObjectDisposedException) { }
     }
 
     private async Task LoadInventory()
@@ -95,9 +82,8 @@ else
         _items = inv.Items;
     }
 
-    public async ValueTask DisposeAsync()
+    public void Dispose()
     {
-        if (_hubConnection is not null)
-            await _hubConnection.DisposeAsync();
+        ConsensusEvents.OnConsensusReached -= HandleConsensus;
     }
 }

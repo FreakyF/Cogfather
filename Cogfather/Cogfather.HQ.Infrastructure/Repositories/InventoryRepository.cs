@@ -7,29 +7,30 @@ namespace Cogfather.HQ.Infrastructure.Repositories;
 
 public class InventoryRepository : IInventoryRepository
 {
-    private readonly HqDbContext _dbContext;
+    private readonly IDbContextFactory<HqDbContext> _factory;
 
-    public InventoryRepository(HqDbContext dbContext)
+    public InventoryRepository(IDbContextFactory<HqDbContext> factory)
     {
-        _dbContext = dbContext;
+        _factory = factory;
     }
 
     public async Task<HqInventory> GetAsync(CancellationToken cancellationToken = default)
     {
-        var inventory = await _dbContext.Inventories.FirstOrDefaultAsync(cancellationToken);
-        if (inventory == null)
-        {
-            inventory = new HqInventory();
-            _dbContext.Inventories.Add(inventory);
-            await _dbContext.SaveChangesAsync(cancellationToken);
-        }
+        await using var db = await _factory.CreateDbContextAsync(cancellationToken);
 
+        var inventory = await db.Inventories.FirstOrDefaultAsync(cancellationToken);
+        if (inventory != null) return inventory;
+
+        inventory = new HqInventory();
+        db.Inventories.Add(inventory);
+        await db.SaveChangesAsync(cancellationToken);
         return inventory;
     }
 
     public async Task SaveAsync(HqInventory inventory, CancellationToken cancellationToken = default)
     {
-        _dbContext.Inventories.Update(inventory);
-        await _dbContext.SaveChangesAsync(cancellationToken);
+        await using var db = await _factory.CreateDbContextAsync(cancellationToken);
+        db.Inventories.Update(inventory);
+        await db.SaveChangesAsync(cancellationToken);
     }
 }

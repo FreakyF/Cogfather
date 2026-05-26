@@ -81,6 +81,26 @@ public class ReceiveProductionReportCommandHandlerTests
         }
     }
 
+    private class MockProductionCatalog : IProductionCatalog
+    {
+        public Task<Recipe?> GetRecipeAsync(string recipeId, CancellationToken cancellationToken = default)
+            => Task.FromResult<Recipe?>(null);
+
+        public Task<IEnumerable<Recipe>> GetAllRecipesAsync(CancellationToken cancellationToken = default)
+            => Task.FromResult<IEnumerable<Recipe>>([]);
+    }
+
+    private class MockInventoryRepository : IInventoryRepository
+    {
+        public HqInventory Inventory { get; } = new();
+
+        public Task<HqInventory> GetAsync(CancellationToken cancellationToken = default)
+            => Task.FromResult(Inventory);
+
+        public Task SaveAsync(HqInventory inventory, CancellationToken cancellationToken = default)
+            => Task.CompletedTask;
+    }
+
     private class MockNodeRepository : INodeRepository
     {
         public List<NodeRegistration> Nodes { get; } = new();
@@ -125,7 +145,7 @@ public class ReceiveProductionReportCommandHandlerTests
         nodeRepo.Nodes.Add(new NodeRegistration("node1", "addr"));
 
         var quorumCollector = new QuorumReportCollector(new FakeScopeFactory(nodeRepo));
-        var handler = new ReceiveProductionReportCommandHandler(reportRepo, new MockOrderRepository(), engine, notifier, quorumCollector);
+        var handler = new ReceiveProductionReportCommandHandler(reportRepo, new MockOrderRepository(), new MockProductionCatalog(), new MockInventoryRepository(), engine, notifier, quorumCollector);
 
         var orderId = Guid.NewGuid();
         var command = new ReceiveProductionReportCommand(orderId, "node1", "recipe1", true);
@@ -154,7 +174,7 @@ public class ReceiveProductionReportCommandHandlerTests
         // n=4, f=1, 2f+1=3 required.
 
         var quorumCollector = new QuorumReportCollector(new FakeScopeFactory(nodeRepo));
-        var handler = new ReceiveProductionReportCommandHandler(reportRepo, new MockOrderRepository(), engine, notifier, quorumCollector);
+        var handler = new ReceiveProductionReportCommandHandler(reportRepo, new MockOrderRepository(), new MockProductionCatalog(), new MockInventoryRepository(), engine, notifier, quorumCollector);
 
         var command = new ReceiveProductionReportCommand(Guid.NewGuid(), "node1", "recipe1", true);
 

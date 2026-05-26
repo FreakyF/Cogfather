@@ -8,6 +8,7 @@ namespace Cogfather.HQ.Infrastructure.Adapters;
 
 internal class JsonIngredientDto
 {
+    [JsonPropertyName("name")]
     public string Id { get; set; } = string.Empty;
     public double Amount { get; set; }
 }

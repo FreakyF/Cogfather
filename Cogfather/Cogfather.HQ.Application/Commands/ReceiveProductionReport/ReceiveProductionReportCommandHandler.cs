@@ -9,7 +9,9 @@ namespace Cogfather.HQ.Application.Commands.ReceiveProductionReport;
 
 public class ReceiveProductionReportCommandHandler : IRequestHandler<ReceiveProductionReportCommand>
 {
+    private readonly IProductionCatalog _catalog;
     private readonly IConsensusEngine _consensusEngine;
+    private readonly IInventoryRepository _inventoryRepository;
     private readonly IConsensusNotifier _notifier;
     private readonly IProductionOrderRepository _orderRepository;
     private readonly QuorumReportCollector _quorumCollector;
@@ -18,12 +20,16 @@ public class ReceiveProductionReportCommandHandler : IRequestHandler<ReceiveProd
     public ReceiveProductionReportCommandHandler(
         IProductionReportRepository reportRepository,
         IProductionOrderRepository orderRepository,
+        IProductionCatalog catalog,
+        IInventoryRepository inventoryRepository,
         IConsensusEngine consensusEngine,
         IConsensusNotifier notifier,
         QuorumReportCollector quorumCollector)
     {
         _reportRepository = reportRepository;
         _orderRepository = orderRepository;
+        _catalog = catalog;
+        _inventoryRepository = inventoryRepository;
         _consensusEngine = consensusEngine;
         _notifier = notifier;
         _quorumCollector = quorumCollector;
@@ -45,13 +51,36 @@ public class ReceiveProductionReportCommandHandler : IRequestHandler<ReceiveProd
         if (order is not null && order.Status == ProductionOrderStatus.InProgress)
         {
             if (result.Verdict == ConsensusVerdict.Approved)
+            {
                 order.CompleteProduction();
+                await AddToInventoryAsync(order.RecipeId, order.TargetAmount, cancellationToken);
+            }
             else
+            {
                 order.FailProduction();
+            }
 
             await _orderRepository.UpdateAsync(order, cancellationToken);
         }
 
         await _notifier.NotifyAsync(result, cancellationToken);
+    }
+
+    private async Task AddToInventoryAsync(string recipeId, double targetAmount, CancellationToken cancellationToken)
+    {
+        var recipe = await _catalog.GetRecipeAsync(recipeId, cancellationToken);
+        if (recipe == null) return;
+
+        var primaryProduct = recipe.Products.FirstOrDefault(p => p.ComponentId == recipeId)
+                             ?? recipe.Products.FirstOrDefault();
+        if (primaryProduct == null) return;
+
+        var outputPerCraft = primaryProduct.Amount;
+        var craftsNeeded = Math.Ceiling(targetAmount / outputPerCraft);
+        var actualProduced = craftsNeeded * outputPerCraft;
+
+        var inventory = await _inventoryRepository.GetAsync(cancellationToken);
+        inventory.Add(primaryProduct.ComponentId, actualProduced);
+        await _inventoryRepository.SaveAsync(inventory, cancellationToken);
     }
 }

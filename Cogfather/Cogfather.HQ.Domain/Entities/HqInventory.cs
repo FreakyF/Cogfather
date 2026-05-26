@@ -4,6 +4,8 @@ namespace Cogfather.HQ.Domain.Entities;
 
 public class HqInventory
 {
+    public int Id { get; private set; }
+
     private readonly Dictionary<string, double> _items = new();
 
     public IReadOnlyDictionary<string, double> Items => _items;

@@ -1,3 +1,4 @@
+using System.Security.Cryptography;
 using System.Text;
 using System.Text.Json;
 using Cogfather.Contracts;
@@ -57,11 +58,12 @@ public class RabbitMqConsumerService : BackgroundService
                     using var scope = _serviceScopeFactory.CreateScope();
                     var mediator = scope.ServiceProvider.GetRequiredService<IMediator>();
 
+                    var hashValid = VerifyHash(report.CorrelationId, report.RecipeId, report.ProducedQuantity, report.ManifestHash);
                     var command = new ReceiveProductionReportCommand(
                         report.CorrelationId,
                         report.NodeId.ToString(),
                         report.RecipeId,
-                        !report.InsufficientInventory && report.ProducedQuantity > 0
+                        !report.InsufficientInventory && report.ProducedQuantity > 0 && hashValid
                     );
 
                     await mediator.Send(command, stoppingToken);
@@ -88,5 +90,13 @@ public class RabbitMqConsumerService : BackgroundService
         }
 
         await base.StopAsync(cancellationToken);
+    }
+
+    private static bool VerifyHash(Guid correlationId, string recipeId, int producedQuantity, string reportedHash)
+    {
+        var canonical = $"{correlationId}:{recipeId}:{producedQuantity}";
+        var bytes = SHA256.HashData(Encoding.UTF8.GetBytes(canonical));
+        var expected = Convert.ToHexString(bytes).ToLowerInvariant();
+        return string.Equals(expected, reportedHash, StringComparison.OrdinalIgnoreCase);
     }
 }

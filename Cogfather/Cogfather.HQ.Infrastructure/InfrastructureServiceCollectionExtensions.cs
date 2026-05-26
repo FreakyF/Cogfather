@@ -23,6 +23,10 @@ public static class InfrastructureServiceCollectionExtensions
         services.AddDbContext<HqDbContext>(options =>
             options.UseSqlite(configuration.GetConnectionString("DefaultConnection")));
 
+        services.AddDbContextFactory<HqDbContext>(options =>
+            options.UseSqlite(configuration.GetConnectionString("DefaultConnection")),
+            ServiceLifetime.Scoped);
+
         services.AddDbContext<AuthDbContext>(options =>
             options.UseSqlite(configuration.GetConnectionString("AuthConnection")
                               ?? configuration.GetConnectionString("DefaultConnection")));

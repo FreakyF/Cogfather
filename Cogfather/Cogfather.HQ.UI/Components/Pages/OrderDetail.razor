@@ -143,7 +143,7 @@ else
         if (_order is not null)
         {
             var reports = await Sender.Send(
-                new Cogfather.HQ.Application.Queries.GetReportsByRecipeId.GetReportsByRecipeIdQuery(_order.RecipeId));
+                new Cogfather.HQ.Application.Queries.GetReportsByCorrelationId.GetReportsByCorrelationIdQuery(_order.Id));
             _reports = reports.OrderByDescending(r => r.ReportedAt).ToList();
         }
         _loading = false;
@@ -153,14 +153,11 @@ else
     {
         try
         {
-            await InvokeAsync(async () =>
-            {
-                await Refresh();
-                StateHasChanged();
-            });
+            await Refresh();
+            await InvokeAsync(StateHasChanged);
+            _pollCts?.Cancel();
         }
         catch (ObjectDisposedException) { }
-        _pollCts?.Cancel();
     }
 
     public ValueTask DisposeAsync()

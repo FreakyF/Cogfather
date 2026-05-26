@@ -16,17 +16,17 @@ worker: build
 
 workers: build
 	@mkdir -p logs
-	@rm -f .worker-pids
+	@if [ -f .worker-pids ]; then xargs kill 2>/dev/null < .worker-pids || true; rm -f .worker-pids; fi
 	@for i in $$(seq 1 $(N)); do \
-		dotnet run --no-build --project $(WKR) > logs/worker-$$i.log 2>&1 & echo $$! >> .worker-pids; \
+		NodeSettings__NodeId="worker-$$i" dotnet run --no-build --project $(WKR) > logs/worker-$$i.log 2>&1 & echo $$! >> .worker-pids; \
 	done
 	@echo "$(N) workers started in background. Logs: ./logs/worker-N.log"
 
 run: build
 	@mkdir -p logs
-	@rm -f .worker-pids
+	@if [ -f .worker-pids ]; then xargs kill 2>/dev/null < .worker-pids || true; rm -f .worker-pids; fi
 	@for i in $$(seq 1 $(N)); do \
-		dotnet run --no-build --project $(WKR) > logs/worker-$$i.log 2>&1 & echo $$! >> .worker-pids; \
+		NodeSettings__NodeId="worker-$$i" dotnet run --no-build --project $(WKR) > logs/worker-$$i.log 2>&1 & echo $$! >> .worker-pids; \
 	done
 	@echo "$(N) workers started in background. Logs: ./logs/worker-N.log"
 	dotnet run --no-build --project $(HQ)
