@@ -70,7 +70,7 @@ public class RabbitMqOrderConsumerService : BackgroundService
                         using var doc = System.Text.Json.JsonDocument.Parse(order.RecipeJson);
                         if (doc.RootElement.TryGetProperty("Energy", out var energyProp) ||
                             doc.RootElement.TryGetProperty("energy", out energyProp))
-                            energy = energyProp.GetDouble();
+                            energy = energyProp.GetDouble() * order.RequestedQuantity;
                     }
 
                     var command = new ExecuteProductionOrderCommand(
