@@ -5,7 +5,7 @@ using Cogfather.Contracts;
 using Cogfather.Contracts.Messages.Faults;
 using Cogfather.Node.Domain.Enums;
 using Cogfather.Node.Domain.Interfaces;
-using Microsoft.Extensions.Configuration;
+using Cogfather.Node.Domain.ValueObjects;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
@@ -27,15 +27,14 @@ public class RabbitMqFaultControlConsumerService : BackgroundService
         IConnection connection,
         IOptions<NodeRabbitMqOptions> options,
         IFaultInjector faultInjector,
-        IConfiguration configuration,
+        NodeIdentity identity,
         ILogger<RabbitMqFaultControlConsumerService> logger)
     {
         _connection = connection;
         _options = options.Value;
         _faultInjector = faultInjector;
         _logger = logger;
-        var nodeId = configuration["NodeSettings:NodeId"] ?? "UnknownNode";
-        _routingKey = ToNodeGuid(nodeId).ToString();
+        _routingKey = ToNodeGuid(identity.NodeId).ToString();
     }
 
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)

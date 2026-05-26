@@ -3,8 +3,8 @@ using System.Text.Json;
 using Cogfather.Contracts;
 using Cogfather.Contracts.Messages.Orders;
 using Cogfather.Node.Application.Commands;
+using Cogfather.Node.Domain.ValueObjects;
 using MediatR;
-using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
@@ -27,14 +27,14 @@ public class RabbitMqOrderConsumerService : BackgroundService
         IConnection connection,
         IOptions<NodeRabbitMqOptions> options,
         IServiceScopeFactory serviceScopeFactory,
-        IConfiguration configuration,
+        NodeIdentity identity,
         ILogger<RabbitMqOrderConsumerService> logger)
     {
         _connection = connection;
         _options = options.Value;
         _serviceScopeFactory = serviceScopeFactory;
         _logger = logger;
-        _nodeId = configuration["NodeSettings:NodeId"] ?? "UnknownNode";
+        _nodeId = identity.NodeId;
     }
 
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
@@ -64,10 +64,20 @@ public class RabbitMqOrderConsumerService : BackgroundService
                     using var scope = _serviceScopeFactory.CreateScope();
                     var mediator = scope.ServiceProvider.GetRequiredService<IMediator>();
 
+                    var energy = 0.0;
+                    if (!string.IsNullOrEmpty(order.RecipeJson))
+                    {
+                        using var doc = System.Text.Json.JsonDocument.Parse(order.RecipeJson);
+                        if (doc.RootElement.TryGetProperty("Energy", out var energyProp) ||
+                            doc.RootElement.TryGetProperty("energy", out energyProp))
+                            energy = energyProp.GetDouble();
+                    }
+
                     var command = new ExecuteProductionOrderCommand(
                         order.CorrelationId,
                         order.RecipeId,
-                        order.RequestedQuantity);
+                        order.RequestedQuantity,
+                        energy);
 
                     await mediator.Send(command, stoppingToken);
                 }

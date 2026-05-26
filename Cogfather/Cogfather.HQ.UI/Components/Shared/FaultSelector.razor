@@ -1,0 +1,35 @@
+@using Cogfather.Contracts.Enums
+
+<div class="input-group input-group-sm">
+    <select class="form-select" @bind="SelectedFault" @bind:after="NotifyChanged">
+        @foreach (var mode in Enum.GetValues<FaultModeContract>())
+        {
+            <option value="@mode">@mode</option>
+        }
+    </select>
+    @if (SelectedFault == FaultModeContract.DelayedResponse)
+    {
+        <input type="number" class="form-control" style="max-width:90px"
+               placeholder="Delay s" min="0" max="60"
+               @bind="DelaySeconds"/>
+    }
+</div>
+
+@code {
+    [Parameter]
+    public FaultModeContract SelectedFault { get; set; }
+
+    [Parameter]
+    public EventCallback<FaultModeContract> SelectedFaultChanged { get; set; }
+
+    [Parameter]
+    public int DelaySeconds { get; set; }
+
+    [Parameter]
+    public EventCallback<int> DelaySecondsChanged { get; set; }
+
+    private async Task NotifyChanged()
+    {
+        await SelectedFaultChanged.InvokeAsync(SelectedFault);
+    }
+}

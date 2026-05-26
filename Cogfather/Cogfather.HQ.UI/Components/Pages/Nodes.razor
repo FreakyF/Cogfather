@@ -1,0 +1,169 @@
+@page "/nodes"
+@attribute [Authorize]
+@rendermode InteractiveServer
+@inject ISender Sender
+@inject Cogfather.HQ.Infrastructure.Messaging.FaultControlPublisher FaultPublisher
+
+<PageTitle>Nodes — Cogfather HQ</PageTitle>
+
+<h1 class="mb-4">Worker Nodes</h1>
+
+@if (_error is not null)
+{
+    <div class="alert alert-danger alert-dismissible">
+        @_error
+        <button type="button" class="btn-close" @onclick="() => _error = null"></button>
+    </div>
+}
+@if (_success is not null)
+{
+    <div class="alert alert-success alert-dismissible">
+        @_success
+        <button type="button" class="btn-close" @onclick="() => _success = null"></button>
+    </div>
+}
+
+@if (_loading)
+{
+    <div class="text-center p-4">
+        <div class="spinner-border text-primary" role="status"></div>
+    </div>
+}
+else if (_nodes.Count == 0)
+{
+    <div class="alert alert-info">No nodes registered. Start worker nodes to see them here.</div>
+}
+else
+{
+    <div class="row g-3">
+        @foreach (var node in _nodes)
+        {
+            <div class="col-md-6 col-xl-4">
+                <div class="card border-0 shadow-sm h-100">
+                    <div class="card-header bg-transparent d-flex justify-content-between align-items-center">
+                        <span class="font-monospace small fw-semibold text-truncate" title="@node.NodeId">
+                            @node.NodeId[..Math.Min(16, node.NodeId.Length)]…
+                        </span>
+                        <NodeStatusBadge Status="node.Status"/>
+                    </div>
+                    <div class="card-body">
+                        <dl class="row mb-2 small">
+                            <dt class="col-5">Address</dt>
+                            <dd class="col-7 text-truncate font-monospace" title="@node.Address">@node.Address</dd>
+                            <dt class="col-5">Active Fault</dt>
+                            <dd class="col-7">
+                                <span class="badge @(node.FaultMode == FaultMode.None ? "bg-secondary" : "bg-danger")">
+                                    @node.FaultMode
+                                </span>
+                            </dd>
+                        </dl>
+
+                        <hr class="my-2"/>
+                        <div class="mb-2">
+                            <label class="form-label small mb-1">Fault Injection</label>
+                            <FaultSelector
+                                SelectedFault="_nodeFaults[node.NodeId]"
+                                SelectedFaultChanged="v => SetNodeFaultLocal(node.NodeId, v)"
+                                DelaySeconds="_nodeDelays[node.NodeId]"
+                                DelaySecondsChanged="v => SetNodeDelayLocal(node.NodeId, v)"/>
+                        </div>
+                        <div class="d-flex gap-2">
+                            <button class="btn btn-sm btn-warning flex-grow-1"
+                                    @onclick="() => ActivateFault(node.NodeId)"
+                                    disabled="@(_working == node.NodeId)">
+                                @if (_working == node.NodeId) {
+                                    <span class="spinner-border spinner-border-sm me-1"></span>
+                                }
+                                Activate
+                            </button>
+                            <button class="btn btn-sm btn-outline-secondary flex-grow-1"
+                                    @onclick="() => ClearFault(node.NodeId)"
+                                    disabled="@(_working == node.NodeId)">
+                                Clear
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        }
+    </div>
+}
+
+<button class="btn btn-outline-secondary btn-sm mt-3" @onclick="Refresh">Refresh</button>
+
+@code {
+    private bool _loading = true;
+    private List<NodeRegistration> _nodes = [];
+    private readonly Dictionary<string, FaultModeContract> _nodeFaults = new();
+    private readonly Dictionary<string, int> _nodeDelays = new();
+    private string? _working;
+    private string? _error;
+    private string? _success;
+
+    protected override async Task OnInitializedAsync() => await Refresh();
+
+    private async Task Refresh()
+    {
+        _loading = true;
+        var nodes = await Sender.Send(new GetAllNodesQuery());
+        _nodes = nodes.ToList();
+        foreach (var n in _nodes)
+        {
+            _nodeFaults.TryAdd(n.NodeId, FaultModeContract.None);
+            _nodeDelays.TryAdd(n.NodeId, 0);
+        }
+        _loading = false;
+    }
+
+    private void SetNodeFaultLocal(string nodeId, FaultModeContract mode) => _nodeFaults[nodeId] = mode;
+    private void SetNodeDelayLocal(string nodeId, int delay) => _nodeDelays[nodeId] = delay;
+
+    private async Task ActivateFault(string nodeId)
+    {
+        _working = nodeId;
+        _error = null;
+        _success = null;
+        try
+        {
+            var mode = _nodeFaults[nodeId];
+            var hqMode = mode == FaultModeContract.None ? FaultMode.None : FaultMode.Byzantine;
+            var delay = _nodeDelays[nodeId];
+
+            await Sender.Send(new SetNodeFaultCommand(nodeId, hqMode));
+            await FaultPublisher.PublishAsync(nodeId, mode, delay);
+
+            _success = $"Fault '{mode}' activated on node {nodeId[..8]}…";
+            await Refresh();
+        }
+        catch (Exception ex)
+        {
+            _error = ex.Message;
+        }
+        finally
+        {
+            _working = null;
+        }
+    }
+
+    private async Task ClearFault(string nodeId)
+    {
+        _working = nodeId;
+        _error = null;
+        _success = null;
+        try
+        {
+            await Sender.Send(new ClearNodeFaultCommand(nodeId));
+            await FaultPublisher.PublishAsync(nodeId, FaultModeContract.None, 0);
+            _success = $"Fault cleared on node {nodeId[..8]}…";
+            await Refresh();
+        }
+        catch (Exception ex)
+        {
+            _error = ex.Message;
+        }
+        finally
+        {
+            _working = null;
+        }
+    }
+}

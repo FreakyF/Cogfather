@@ -25,21 +25,37 @@ public class ReceiveProductionReportCommandHandlerTests
             return Task.CompletedTask;
         }
 
+        public Task<IEnumerable<ProductionReport>> GetByCorrelationIdAsync(Guid correlationId,
+            CancellationToken cancellationToken = default)
+        {
+            return Task.FromResult(Reports.Where(r => r.CorrelationId == correlationId));
+        }
+
         public Task<IEnumerable<ProductionReport>> GetByRecipeIdAsync(string recipeId,
             CancellationToken cancellationToken = default)
         {
             return Task.FromResult(Reports.Where(r => r.RecipeId == recipeId));
         }
 
-        public Task<ProductionReport?> GetByIdAsync(Guid id, CancellationToken cancellationToken = default)
-        {
-            return Task.FromResult(Reports.FirstOrDefault(r => r.Id == id));
-        }
-
         public Task<IEnumerable<ProductionReport>> GetAllAsync(CancellationToken cancellationToken = default)
         {
             return Task.FromResult<IEnumerable<ProductionReport>>(Reports);
         }
+    }
+
+    private class MockOrderRepository : IProductionOrderRepository
+    {
+        public Task<ProductionOrder?> GetByIdAsync(Guid id, CancellationToken cancellationToken = default)
+            => Task.FromResult<ProductionOrder?>(null);
+
+        public Task<IEnumerable<ProductionOrder>> GetAllAsync(CancellationToken cancellationToken = default)
+            => Task.FromResult<IEnumerable<ProductionOrder>>([]);
+
+        public Task AddAsync(ProductionOrder order, CancellationToken cancellationToken = default)
+            => Task.CompletedTask;
+
+        public Task UpdateAsync(ProductionOrder order, CancellationToken cancellationToken = default)
+            => Task.CompletedTask;
     }
 
     private class MockConsensusEngine : IConsensusEngine
@@ -108,10 +124,11 @@ public class ReceiveProductionReportCommandHandlerTests
         var nodeRepo = new MockNodeRepository();
         nodeRepo.Nodes.Add(new NodeRegistration("node1", "addr"));
 
-        var quorumCollector = new QuorumReportCollector(nodeRepo);
-        var handler = new ReceiveProductionReportCommandHandler(reportRepo, engine, notifier, quorumCollector);
+        var quorumCollector = new QuorumReportCollector(new FakeScopeFactory(nodeRepo));
+        var handler = new ReceiveProductionReportCommandHandler(reportRepo, new MockOrderRepository(), engine, notifier, quorumCollector);
 
-        var command = new ReceiveProductionReportCommand("node1", "recipe1", true);
+        var orderId = Guid.NewGuid();
+        var command = new ReceiveProductionReportCommand(orderId, "node1", "recipe1", true);
 
         // Act
         await handler.Handle(command, CancellationToken.None);
@@ -136,10 +153,10 @@ public class ReceiveProductionReportCommandHandlerTests
         nodeRepo.Nodes.Add(new NodeRegistration("node4", "addr"));
         // n=4, f=1, 2f+1=3 required.
 
-        var quorumCollector = new QuorumReportCollector(nodeRepo);
-        var handler = new ReceiveProductionReportCommandHandler(reportRepo, engine, notifier, quorumCollector);
+        var quorumCollector = new QuorumReportCollector(new FakeScopeFactory(nodeRepo));
+        var handler = new ReceiveProductionReportCommandHandler(reportRepo, new MockOrderRepository(), engine, notifier, quorumCollector);
 
-        var command = new ReceiveProductionReportCommand("node1", "recipe1", true);
+        var command = new ReceiveProductionReportCommand(Guid.NewGuid(), "node1", "recipe1", true);
 
         // Act
         await handler.Handle(command, CancellationToken.None);

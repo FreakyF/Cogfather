@@ -1,5 +1,6 @@
 using System.Text;
 using System.Text.Json;
+using Cogfather.Contracts;
 using Cogfather.Contracts.Messages.Reports;
 using Cogfather.HQ.Application.Commands.ReceiveProductionReport;
 using MediatR;
@@ -50,13 +51,14 @@ public class RabbitMqConsumerService : BackgroundService
 
             try
             {
-                var report = JsonSerializer.Deserialize<ProductionReportMessage>(messageString);
+                var report = JsonSerializer.Deserialize(messageString, CogfatherJsonContext.Default.ProductionReportMessage);
                 if (report != null)
                 {
                     using var scope = _serviceScopeFactory.CreateScope();
                     var mediator = scope.ServiceProvider.GetRequiredService<IMediator>();
 
                     var command = new ReceiveProductionReportCommand(
+                        report.CorrelationId,
                         report.NodeId.ToString(),
                         report.RecipeId,
                         !report.InsufficientInventory && report.ProducedQuantity > 0

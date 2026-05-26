@@ -1,5 +1,6 @@
 using System.Text;
 using System.Text.Json;
+using Cogfather.Contracts;
 using Cogfather.Contracts.Messages.Orders;
 using Cogfather.HQ.Application.Interfaces;
 using Cogfather.HQ.Domain.Entities;
@@ -48,7 +49,7 @@ public class RabbitMqPublisher : IOrderDispatcher
                 DateTimeOffset.UtcNow,
                 recipeJson);
 
-            var body = Encoding.UTF8.GetBytes(JsonSerializer.Serialize(message));
+            var body = Encoding.UTF8.GetBytes(JsonSerializer.Serialize(message, CogfatherJsonContext.Default.ProductionOrderMessage));
 
             var properties = new BasicProperties { Persistent = true };
 

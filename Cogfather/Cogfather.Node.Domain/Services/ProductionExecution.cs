@@ -16,6 +16,9 @@ public class ProductionExecution
 
     public async Task<ProductionResult> ExecuteAsync(ProductionManifest manifest, NodeInventory inventory)
     {
+        if (manifest.Energy > 0)
+            await Task.Delay(TimeSpan.FromSeconds(manifest.Energy));
+
         await _faultInjector.ApplyDelayIfNeededAsync();
 
         if (_faultInjector.ShouldSilentlyFail())

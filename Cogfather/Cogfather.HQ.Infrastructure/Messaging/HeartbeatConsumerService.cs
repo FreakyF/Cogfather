@@ -1,5 +1,6 @@
 using System.Text;
 using System.Text.Json;
+using Cogfather.Contracts;
 using Cogfather.Contracts.Messages.Heartbeat;
 using Cogfather.HQ.Application.Commands.RegisterNode;
 using MediatR;
@@ -46,7 +47,7 @@ public class HeartbeatConsumerService : BackgroundService
 
             try
             {
-                var heartbeat = JsonSerializer.Deserialize<NodeHeartbeatMessage>(messageString);
+                var heartbeat = JsonSerializer.Deserialize(messageString, CogfatherJsonContext.Default.NodeHeartbeatMessage);
                 if (heartbeat != null)
                 {
                     using var scope = _serviceScopeFactory.CreateScope();

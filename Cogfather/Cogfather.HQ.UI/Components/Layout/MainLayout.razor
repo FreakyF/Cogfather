@@ -1,4 +1,4 @@
-﻿@inherits LayoutComponentBase
+@inherits LayoutComponentBase
 
 <div class="page">
     <div class="sidebar">
@@ -6,8 +6,22 @@
     </div>
 
     <main>
-        <div class="top-row px-4">
-            <a href="https://learn.microsoft.com/aspnet/core/" target="_blank">About</a>
+        <div class="top-row px-4 d-flex align-items-center justify-content-between">
+            <span class="fw-semibold text-secondary small">Cogfather HQ</span>
+            <AuthorizeView>
+                <Authorized>
+                    <div class="d-flex align-items-center gap-3">
+                        <span class="small text-muted">@context.User.Identity?.Name</span>
+                        <form method="post" action="/account/logout">
+                            <AntiforgeryToken/>
+                            <button type="submit" class="btn btn-sm btn-outline-secondary">Sign out</button>
+                        </form>
+                    </div>
+                </Authorized>
+                <NotAuthorized>
+                    <a href="/account/login" class="btn btn-sm btn-outline-primary">Sign in</a>
+                </NotAuthorized>
+            </AuthorizeView>
         </div>
 
         <article class="content px-4">

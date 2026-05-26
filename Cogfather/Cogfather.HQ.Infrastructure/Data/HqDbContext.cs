@@ -23,8 +23,8 @@ public class HqDbContext : DbContext
 
         modelBuilder.Entity<HqInventory>(b =>
         {
-            b.HasKey("Id"); // Shadow property
             b.Property<int>("Id").ValueGeneratedOnAdd();
+            b.HasKey("Id");
 
             b.Property(i => i.Items)
                 .HasConversion(

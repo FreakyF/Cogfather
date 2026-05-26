@@ -1,8 +1,8 @@
 namespace Cogfather.Node.Domain.ValueObjects;
 
-public record ProductionManifest(Guid CorrelationId, string ComponentId, int Amount)
+public record ProductionManifest(Guid CorrelationId, string ComponentId, int Amount, double Energy = 0.0)
 {
-    public static ProductionManifest Create(Guid correlationId, string componentId, int amount)
+    public static ProductionManifest Create(Guid correlationId, string componentId, int amount, double energy = 0.0)
     {
         if (correlationId == Guid.Empty)
             throw new ArgumentException("CorrelationId cannot be empty.", nameof(correlationId));
@@ -11,6 +11,6 @@ public record ProductionManifest(Guid CorrelationId, string ComponentId, int Amo
         if (amount <= 0)
             throw new ArgumentOutOfRangeException(nameof(amount), "Amount must be greater than zero.");
 
-        return new ProductionManifest(correlationId, componentId, amount);
+        return new ProductionManifest(correlationId, componentId, amount, energy);
     }
 }

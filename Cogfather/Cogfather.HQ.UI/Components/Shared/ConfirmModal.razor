@@ -1,0 +1,30 @@
+<div class="modal fade show d-block" tabindex="-1" style="background:rgba(0,0,0,.5)" @onclick="HandleBackdropClick">
+    <div class="modal-dialog" @onclick:stopPropagation>
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">@Title</h5>
+                <button type="button" class="btn-close" @onclick="Cancel"></button>
+            </div>
+            <div class="modal-body">
+                <p>@Message</p>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary" @onclick="Cancel">Cancel</button>
+                <button class="btn @ConfirmClass" @onclick="Confirm">@ConfirmText</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+@code {
+    [Parameter, EditorRequired] public string Title { get; set; } = "Confirm";
+    [Parameter, EditorRequired] public string Message { get; set; } = "Are you sure?";
+    [Parameter] public string ConfirmText { get; set; } = "Confirm";
+    [Parameter] public string ConfirmClass { get; set; } = "btn-primary";
+    [Parameter] public EventCallback OnConfirm { get; set; }
+    [Parameter] public EventCallback OnCancel { get; set; }
+
+    private Task Confirm() => OnConfirm.InvokeAsync();
+    private Task Cancel() => OnCancel.InvokeAsync();
+    private Task HandleBackdropClick() => OnCancel.InvokeAsync();
+}

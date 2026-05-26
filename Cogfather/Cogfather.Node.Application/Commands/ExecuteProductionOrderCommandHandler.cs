@@ -39,7 +39,7 @@ public class ExecuteProductionOrderCommandHandler : IRequestHandler<ExecuteProdu
     {
         _logger.LogInformation("Executing production order for CorrelationId: {CorrelationId}", request.CorrelationId);
 
-        var manifest = ProductionManifest.Create(request.CorrelationId, request.ComponentId, request.Amount);
+        var manifest = ProductionManifest.Create(request.CorrelationId, request.ComponentId, request.Amount, request.Energy);
         var inventory = _inventoryStore.GetInventory();
 
         var result = await _executionService.ExecuteAsync(manifest, inventory);
