@@ -1,0 +1,182 @@
+@page "/orders/{Id:guid}"
+@attribute [Authorize]
+@rendermode InteractiveServer
+@inject ISender Sender
+@inject NavigationManager NavManager
+@inject Cogfather.HQ.UI.Services.ConsensusEventService ConsensusEvents
+@implements IAsyncDisposable
+
+<PageTitle>Order Detail — Cogfather HQ</PageTitle>
+
+@if (_loading)
+{
+    <div class="text-center mt-5">
+        <div class="spinner-border text-primary" role="status"></div>
+    </div>
+}
+else if (_order is null)
+{
+    <div class="alert alert-warning">Order not found.</div>
+    <a href="/orders" class="btn btn-secondary btn-sm">Back to Orders</a>
+}
+else
+{
+    <nav aria-label="breadcrumb" class="mb-3">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item"><a href="/orders">Orders</a></li>
+            <li class="breadcrumb-item active">@_order.Id.ToString()[..8]…</li>
+        </ol>
+    </nav>
+
+    <div class="row g-4">
+        <div class="col-md-6">
+            <div class="card border-0 shadow-sm h-100">
+                <div class="card-header bg-transparent fw-semibold">Order Details</div>
+                <div class="card-body">
+                    <dl class="row mb-0">
+                        <dt class="col-sm-4">Order ID</dt>
+                        <dd class="col-sm-8 font-monospace small">@_order.Id</dd>
+                        <dt class="col-sm-4">Recipe</dt>
+                        <dd class="col-sm-8 font-monospace">@_order.RecipeId</dd>
+                        <dt class="col-sm-4">Target Qty</dt>
+                        <dd class="col-sm-8">@_order.TargetAmount</dd>
+                        <dt class="col-sm-4">Status</dt>
+                        <dd class="col-sm-8">
+                            <span class="badge @StatusBadge(_order.Status)">@_order.Status</span>
+                        </dd>
+                        <dt class="col-sm-4">Created</dt>
+                        <dd class="col-sm-8 text-muted small">@_order.CreatedAt.ToLocalTime().ToString("yyyy-MM-dd HH:mm:ss")</dd>
+                    </dl>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-6">
+            <div class="card border-0 shadow-sm h-100">
+                <div class="card-header bg-transparent fw-semibold">Node Reports for Recipe</div>
+                <div class="card-body p-0">
+                    @if (_reports.Count == 0)
+                    {
+                        <p class="text-muted p-3 mb-0">No reports received yet.</p>
+                    }
+                    else
+                    {
+                        <table class="table table-sm mb-0">
+                            <thead class="table-light">
+                            <tr>
+                                <th>Node</th>
+                                <th>Recipe</th>
+                                <th>Success</th>
+                                <th>At</th>
+                            </tr>
+                            </thead>
+                            <tbody>
+                            @foreach (var r in _reports)
+                            {
+                                <tr>
+                                    <td class="font-monospace small text-truncate" style="max-width:100px" title="@r.NodeId">
+                                        @r.NodeId[..Math.Min(8, r.NodeId.Length)]…
+                                    </td>
+                                    <td class="font-monospace small">@r.RecipeId</td>
+                                    <td>
+                                        <span class="badge @(r.Success ? "bg-success" : "bg-danger")">
+                                            @(r.Success ? "OK" : "Fail")
+                                        </span>
+                                    </td>
+                                    <td class="text-muted small">@r.ReportedAt.ToLocalTime().ToString("HH:mm:ss")</td>
+                                </tr>
+                            }
+                            </tbody>
+                        </table>
+                    }
+                </div>
+            </div>
+        </div>
+    </div>
+}
+
+@code {
+    [Parameter] public Guid Id { get; set; }
+
+    private bool _loading = true;
+    private ProductionOrder? _order;
+    private List<ProductionReport> _reports = [];
+    private CancellationTokenSource? _pollCts;
+
+    protected override async Task OnInitializedAsync()
+    {
+        ConsensusEvents.OnConsensusReached += HandleConsensus;
+        await Refresh();
+        if (_order?.Status == ProductionOrderStatus.InProgress)
+            StartPolling();
+    }
+
+    private void StartPolling()
+    {
+        _pollCts?.Cancel();
+        _pollCts = new CancellationTokenSource();
+        _ = PollAsync(_pollCts.Token);
+    }
+
+    private async Task PollAsync(CancellationToken ct)
+    {
+        using var timer = new PeriodicTimer(TimeSpan.FromSeconds(1));
+        try
+        {
+            while (await timer.WaitForNextTickAsync(ct))
+            {
+                await InvokeAsync(async () =>
+                {
+                    await Refresh();
+                    StateHasChanged();
+                });
+                if (_order?.Status != ProductionOrderStatus.InProgress)
+                    break;
+            }
+        }
+        catch (OperationCanceledException) { }
+    }
+
+    private async Task Refresh()
+    {
+        _order = await Sender.Send(new GetOrderByIdQuery(Id));
+        if (_order is not null)
+        {
+            var reports = await Sender.Send(
+                new Cogfather.HQ.Application.Queries.GetReportsByRecipeId.GetReportsByRecipeIdQuery(_order.RecipeId));
+            _reports = reports.OrderByDescending(r => r.ReportedAt).ToList();
+        }
+        _loading = false;
+    }
+
+    private async void HandleConsensus(ConsensusResult _)
+    {
+        try
+        {
+            await InvokeAsync(async () =>
+            {
+                await Refresh();
+                StateHasChanged();
+            });
+        }
+        catch (ObjectDisposedException) { }
+        _pollCts?.Cancel();
+    }
+
+    public ValueTask DisposeAsync()
+    {
+        ConsensusEvents.OnConsensusReached -= HandleConsensus;
+        _pollCts?.Cancel();
+        _pollCts?.Dispose();
+        return ValueTask.CompletedTask;
+    }
+
+    private static string StatusBadge(ProductionOrderStatus s) => s switch
+    {
+        ProductionOrderStatus.Completed  => "bg-success",
+        ProductionOrderStatus.Failed     => "bg-danger",
+        ProductionOrderStatus.InProgress => "bg-primary",
+        ProductionOrderStatus.Cancelled  => "bg-secondary",
+        _                                => "bg-warning text-dark"
+    };
+}

@@ -40,9 +40,9 @@ public class ConsensusEngineTests
         var engine = new ConsensusEngine();
         var reports = new List<ProductionReport>();
         for (var i = 0; i < successCount; i++)
-            reports.Add(new ProductionReport($"node{i}", "recipe1", true));
+            reports.Add(new ProductionReport(Guid.NewGuid(), $"node{i}", "recipe1", true));
         for (var i = successCount; i < total; i++)
-            reports.Add(new ProductionReport($"node{i}", "recipe1", false));
+            reports.Add(new ProductionReport(Guid.NewGuid(), $"node{i}", "recipe1", false));
 
         // Act
         var result = await engine.EvaluateAsync("recipe1", reports);

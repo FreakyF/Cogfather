@@ -1,5 +1,6 @@
 using System.Text;
 using System.Text.Json;
+using Cogfather.Contracts;
 using Cogfather.Contracts.Enums;
 using Cogfather.Contracts.Messages.Faults;
 using Cogfather.HQ.Infrastructure.Services;
@@ -43,7 +44,7 @@ public class FaultControlPublisher
                 faultMode,
                 delaySeconds);
 
-            var body = Encoding.UTF8.GetBytes(JsonSerializer.Serialize(message));
+            var body = Encoding.UTF8.GetBytes(JsonSerializer.Serialize(message, CogfatherJsonContext.Default.FaultControlMessage));
             var properties = new BasicProperties { Persistent = true };
 
             await channel.BasicPublishAsync(

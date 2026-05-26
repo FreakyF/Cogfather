@@ -1,6 +1,7 @@
 using Cogfather.HQ.Application.Interfaces;
 using Cogfather.HQ.Domain.Entities;
 using Cogfather.HQ.Domain.Enums;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace Cogfather.HQ.Application.Services;
 
@@ -11,18 +12,21 @@ namespace Cogfather.HQ.Application.Services;
 /// </summary>
 public class QuorumReportCollector
 {
-    private readonly INodeRepository _nodeRepository;
+    private readonly IServiceScopeFactory _scopeFactory;
 
-    public QuorumReportCollector(INodeRepository nodeRepository)
+    public QuorumReportCollector(IServiceScopeFactory scopeFactory)
     {
-        _nodeRepository = nodeRepository;
+        _scopeFactory = scopeFactory;
     }
 
     public async Task<bool> HasQuorumAsync(
         IEnumerable<ProductionReport> reports,
         CancellationToken cancellationToken = default)
     {
-        var nodes = await _nodeRepository.GetAllAsync(cancellationToken);
+        await using var scope = _scopeFactory.CreateAsyncScope();
+        var nodeRepository = scope.ServiceProvider.GetRequiredService<INodeRepository>();
+
+        var nodes = await nodeRepository.GetAllAsync(cancellationToken);
         var activeCount = nodes.Count(n => n.Status == NodeStatus.Active);
 
         if (activeCount == 0)

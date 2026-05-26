@@ -20,6 +20,14 @@ public class ProductionReportRepository : IProductionReportRepository
         await _dbContext.SaveChangesAsync(cancellationToken);
     }
 
+    public async Task<IEnumerable<ProductionReport>> GetByCorrelationIdAsync(Guid correlationId,
+        CancellationToken cancellationToken = default)
+    {
+        return await _dbContext.ProductionReports
+            .Where(r => r.CorrelationId == correlationId)
+            .ToListAsync(cancellationToken);
+    }
+
     public async Task<IEnumerable<ProductionReport>> GetByRecipeIdAsync(string recipeId,
         CancellationToken cancellationToken = default)
     {

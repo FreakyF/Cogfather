@@ -7,8 +7,9 @@ var builder = Host.CreateApplicationBuilder(args);
 builder.Logging.ClearProviders();
 builder.Services.AddSerilog(lc => lc.ReadFrom.Configuration(builder.Configuration));
 
-var nodeId = builder.Configuration["NodeSettings:NodeId"]
-    ?? throw new InvalidOperationException("NodeSettings:NodeId is not configured");
+var nodeId = builder.Configuration["NodeSettings:NodeId"];
+if (string.IsNullOrWhiteSpace(nodeId))
+    nodeId = Guid.NewGuid().ToString();
 
 builder.Services.AddSingleton(NodeIdentity.Create(nodeId));
 builder.Services.AddNodeInfrastructureServices(builder.Configuration);

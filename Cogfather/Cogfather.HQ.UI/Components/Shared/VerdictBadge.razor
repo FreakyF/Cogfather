@@ -1,0 +1,16 @@
+@using Cogfather.HQ.Domain.Enums
+
+<span class="badge @BadgeClass">@Verdict</span>
+
+@code {
+    [Parameter, EditorRequired]
+    public ConsensusVerdict Verdict { get; set; }
+
+    private string BadgeClass => Verdict switch
+    {
+        ConsensusVerdict.Approved     => "bg-success",
+        ConsensusVerdict.Rejected     => "bg-danger",
+        ConsensusVerdict.Inconclusive => "bg-warning text-dark",
+        _                             => "bg-secondary"
+    };
+}

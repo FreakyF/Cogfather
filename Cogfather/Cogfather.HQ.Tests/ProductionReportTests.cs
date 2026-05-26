@@ -15,10 +15,12 @@ public class ProductionReportTests
         var success = true;
 
         // Act
-        var report = new ProductionReport(nodeId, recipeId, success);
+        var correlationId = Guid.NewGuid();
+        var report = new ProductionReport(correlationId, nodeId, recipeId, success);
 
         // Assert
         Assert.NotEqual(Guid.Empty, report.Id);
+        Assert.Equal(correlationId, report.CorrelationId);
         Assert.Equal(nodeId, report.NodeId);
         Assert.Equal(recipeId, report.RecipeId);
         Assert.Equal(success, report.Success);

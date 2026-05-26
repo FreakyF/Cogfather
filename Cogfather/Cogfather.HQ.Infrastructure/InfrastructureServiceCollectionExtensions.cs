@@ -24,7 +24,8 @@ public static class InfrastructureServiceCollectionExtensions
             options.UseSqlite(configuration.GetConnectionString("DefaultConnection")));
 
         services.AddDbContext<AuthDbContext>(options =>
-            options.UseSqlite(configuration.GetConnectionString("DefaultConnection")));
+            options.UseSqlite(configuration.GetConnectionString("AuthConnection")
+                              ?? configuration.GetConnectionString("DefaultConnection")));
 
         services.AddIdentity<ApplicationUser, IdentityRole>(options =>
             {
@@ -40,6 +41,7 @@ public static class InfrastructureServiceCollectionExtensions
         services.AddScoped<IInventoryRepository, InventoryRepository>();
 
         services.AddSingleton<IRecipeBook, JsonRecipeBook>();
+        services.AddSingleton<IProductionCatalog, ProductionCatalog>();
 
         services.AddTransient<DbSeeder>();
         services.AddSingleton<TotpService>();

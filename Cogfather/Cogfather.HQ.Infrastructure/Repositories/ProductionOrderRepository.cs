@@ -16,12 +16,12 @@ public class ProductionOrderRepository : IProductionOrderRepository
 
     public async Task<ProductionOrder?> GetByIdAsync(Guid id, CancellationToken cancellationToken = default)
     {
-        return await _dbContext.ProductionOrders.FirstOrDefaultAsync(o => o.Id == id, cancellationToken);
+        return await _dbContext.ProductionOrders.AsNoTracking().FirstOrDefaultAsync(o => o.Id == id, cancellationToken);
     }
 
     public async Task<IEnumerable<ProductionOrder>> GetAllAsync(CancellationToken cancellationToken = default)
     {
-        return await _dbContext.ProductionOrders.ToListAsync(cancellationToken);
+        return await _dbContext.ProductionOrders.AsNoTracking().ToListAsync(cancellationToken);
     }
 
     public async Task AddAsync(ProductionOrder order, CancellationToken cancellationToken = default)

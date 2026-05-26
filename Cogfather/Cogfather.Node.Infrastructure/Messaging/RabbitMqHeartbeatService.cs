@@ -4,6 +4,7 @@ using System.Text.Json;
 using Cogfather.Contracts;
 using Cogfather.Contracts.Messages.Heartbeat;
 using Cogfather.Node.Application.Interfaces;
+using Cogfather.Node.Domain.ValueObjects;
 using Cogfather.Node.Infrastructure.Services;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Hosting;
@@ -26,6 +27,7 @@ public class RabbitMqHeartbeatService : BackgroundService
         IConnection connection,
         IOptions<NodeRabbitMqOptions> options,
         IInventoryStore inventoryStore,
+        NodeIdentity identity,
         IConfiguration configuration,
         ILogger<RabbitMqHeartbeatService> logger)
     {
@@ -33,8 +35,8 @@ public class RabbitMqHeartbeatService : BackgroundService
         _options = options.Value;
         _inventoryStore = inventoryStore;
         _logger = logger;
-        _displayName = configuration["NodeSettings:NodeId"] ?? "UnknownNode";
-        _nodeGuid = ToNodeGuid(_displayName);
+        _nodeGuid = ToNodeGuid(identity.NodeId);
+        _displayName = configuration["NodeSettings:DisplayName"] ?? identity.NodeId[..8];
     }
 
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)

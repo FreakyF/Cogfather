@@ -51,7 +51,7 @@ public class QuorumReportCollectorTests
     {
         // Arrange
         var repository = new MockNodeRepository();
-        var collector = new QuorumReportCollector(repository);
+        var collector = new QuorumReportCollector(new FakeScopeFactory(repository));
         var reports = new List<ProductionReport>();
 
         // Act
@@ -86,8 +86,8 @@ public class QuorumReportCollectorTests
         repository.Nodes.Add(CreateInactiveNode("inactive1"));
         repository.Nodes.Add(CreateInactiveNode("inactive2"));
 
-        var collector = new QuorumReportCollector(repository);
-        var reports = Enumerable.Range(0, reportCount).Select(i => new ProductionReport($"node{i}", "recipe1", true))
+        var collector = new QuorumReportCollector(new FakeScopeFactory(repository));
+        var reports = Enumerable.Range(0, reportCount).Select(i => new ProductionReport(Guid.NewGuid(), $"node{i}", "recipe1", true))
             .ToList();
 
         // Act

@@ -1,76 +1,212 @@
-﻿@page "/"
-@using Cogfather.Contracts.Commands
-@using Cogfather.HQ.Application.Interfaces
-@using MassTransit
-@inject IProductionCatalog Catalog
-@inject ILogger<Home> Logger
-@inject IBus Bus
+@page "/"
+@attribute [Authorize]
+@rendermode InteractiveServer
+@inject ISender Sender
+@inject NavigationManager NavManager
+@inject Cogfather.HQ.UI.Services.ConsensusEventService ConsensusEvents
+@implements IDisposable
 
+<PageTitle>Dashboard — Cogfather HQ</PageTitle>
 
-<PageTitle>HQ Dashboard</PageTitle>
+<h1 class="mb-4">Dashboard</h1>
 
-<h1>Production Catalog</h1>
+<div class="row g-3 mb-4">
+    <div class="col-md-3">
+        <div class="card border-0 shadow-sm">
+            <div class="card-body text-center">
+                <h6 class="text-muted">Active Nodes</h6>
+                <h2 class="text-success">@_activeNodeCount</h2>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card border-0 shadow-sm">
+            <div class="card-body text-center">
+                <h6 class="text-muted">Total Orders</h6>
+                <h2 class="text-primary">@_recentOrders.Count</h2>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card border-0 shadow-sm">
+            <div class="card-body text-center">
+                <h6 class="text-muted">Completed</h6>
+                <h2 class="text-success">@_recentOrders.Count(o => o.Status == ProductionOrderStatus.Completed)</h2>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card border-0 shadow-sm">
+            <div class="card-body text-center">
+                <h6 class="text-muted">SignalR</h6>
+                <span class="badge @(_hubConnected ? "bg-success" : "bg-danger")">
+                    @(_hubConnected ? "Connected" : "Disconnected")
+                </span>
+            </div>
+        </div>
+    </div>
+</div>
 
-@if (_recipes == null)
+<div class="row g-4">
+    <div class="col-lg-8">
+        <div class="card border-0 shadow-sm">
+            <div class="card-header bg-transparent fw-semibold">Recent Orders</div>
+            <div class="card-body p-0">
+                @if (_recentOrders.Count == 0)
+                {
+                    <p class="text-muted p-3 mb-0">No orders yet.</p>
+                }
+                else
+                {
+                    <table class="table table-hover table-sm mb-0">
+                        <thead class="table-light">
+                        <tr>
+                            <th>Recipe</th>
+                            <th>Qty</th>
+                            <th>Status</th>
+                            <th>Created</th>
+                        </tr>
+                        </thead>
+                        <tbody>
+                        @foreach (var order in _recentOrders.Take(10))
+                        {
+                            var oid = order.Id;
+                            <tr style="cursor:pointer" @onclick="() => GoToOrder(oid)">
+                                <td class="font-monospace small">@order.RecipeId</td>
+                                <td>@order.TargetAmount</td>
+                                <td>
+                                    <span class="badge @StatusBadge(order.Status)">@order.Status</span>
+                                </td>
+                                <td class="text-muted small">@(order.CreatedAt.ToLocalTime().ToString("HH:mm:ss"))</td>
+                            </tr>
+                        }
+                        </tbody>
+                    </table>
+                }
+            </div>
+        </div>
+    </div>
+
+    <div class="col-lg-4">
+        <div class="card border-0 shadow-sm mb-3">
+            <div class="card-header bg-transparent fw-semibold">Node Status</div>
+            <div class="card-body">
+                @if (_nodes.Count == 0)
+                {
+                    <p class="text-muted small mb-0">No nodes registered.</p>
+                }
+                else
+                {
+                    @foreach (var node in _nodes)
+                    {
+                        <div class="d-flex justify-content-between align-items-center mb-2">
+                            <span class="small text-truncate" style="max-width:160px" title="@node.NodeId">
+                                @node.Address
+                            </span>
+                            <NodeStatusBadge Status="node.Status"/>
+                        </div>
+                    }
+                }
+            </div>
+        </div>
+
+        <div class="card border-0 shadow-sm">
+            <div class="card-header bg-transparent fw-semibold">Inventory Snapshot</div>
+            <div class="card-body p-0">
+                @if (_inventoryItems.Count == 0)
+                {
+                    <p class="text-muted p-3 mb-0 small">Inventory empty.</p>
+                }
+                else
+                {
+                    <ul class="list-group list-group-flush">
+                        @foreach (var item in _inventoryItems.OrderByDescending(i => i.Value).Take(5))
+                        {
+                            <li class="list-group-item d-flex justify-content-between py-1 px-3">
+                                <span class="small font-monospace">@item.Key</span>
+                                <span class="badge bg-secondary">@item.Value</span>
+                            </li>
+                        }
+                    </ul>
+                }
+            </div>
+        </div>
+    </div>
+</div>
+
+@if (_eventLog.Count > 0)
 {
-    <p><em>Loading recipes from infrastructure...</em></p>
-}
-else if (!_recipes.Any())
-{
-    <p><em>No recipes found. Check your JSON file.</em></p>
-}
-else
-{
-    <table class="table table-striped table-hover mt-4">
-        <thead class="table-dark">
-        <tr>
-            <th>Recipe ID</th>
-            <th>Energy (Time)</th>
-            <th>Ingredients Count</th>
-            <th>Action</th>
-        </tr>
-        </thead>
-        <tbody>
-        @foreach (var recipe in _recipes.Take(250))
-        {
-            <tr>
-                <td class="align-middle"><strong>@recipe.Id</strong></td>
-                <td class="align-middle">@recipe.Energy s</td>
-                <td class="align-middle">@recipe.Ingredients.Count</td>
-                <td>
-                    <button class="btn btn-primary btn-sm" @onclick="() => OnOrderClicked(recipe.Id)">
-                        Order Production
-                    </button>
-                </td>
-            </tr>
-        }
-        </tbody>
-    </table>
+    <div class="card border-0 shadow-sm mt-4">
+        <div class="card-header bg-transparent fw-semibold">Consensus Event Stream</div>
+        <div class="card-body p-0">
+            <ul class="list-group list-group-flush">
+                @foreach (var ev in _eventLog.TakeLast(20).Reverse())
+                {
+                    <li class="list-group-item py-1 px-3 small">
+                        <span class="text-muted me-2">@ev.Time.ToString("HH:mm:ss")</span>
+                        <span class="font-monospace me-2">@ev.RecipeId</span>
+                        <VerdictBadge Verdict="ev.Verdict"/>
+                        <span class="text-muted ms-2">acc: @ev.Accuracy.ToString("P0")</span>
+                    </li>
+                }
+            </ul>
+        </div>
+    </div>
 }
 
 @code {
-    private IEnumerable<Recipe>? _recipes;
+    private List<ProductionOrder> _recentOrders = [];
+    private List<NodeRegistration> _nodes = [];
+    private IReadOnlyDictionary<string, double> _inventoryItems = new Dictionary<string, double>();
+    private readonly List<ConsensusEvent> _eventLog = [];
+    private int _activeNodeCount;
+    private bool _hubConnected;
 
     protected override async Task OnInitializedAsync()
     {
-        _recipes = await Catalog.GetAllRecipesAsync();
-        Logger.LogInformation("Loaded {Count} recipes into UI.", _recipes?.Count() ?? 0);
+        var orders = await Sender.Send(new GetOrdersQuery());
+        _recentOrders = orders.OrderByDescending(o => o.CreatedAt).ToList();
+
+        var nodes = await Sender.Send(new GetAllNodesQuery());
+        _nodes = nodes.ToList();
+        _activeNodeCount = _nodes.Count(n => n.Status == NodeStatus.Active);
+
+        var inventory = await Sender.Send(new GetInventoryQuery());
+        _inventoryItems = inventory.Items;
+
+        _hubConnected = true;
+        ConsensusEvents.OnConsensusReached += HandleConsensus;
     }
 
-    private async Task OnOrderClicked(string recipeId)
+    private async void HandleConsensus(ConsensusResult result)
     {
-        var correlationId = Guid.NewGuid();
+        try
+        {
+            _eventLog.Add(new ConsensusEvent(result.RecipeId, result.Verdict, result.Accuracy, DateTime.Now));
 
-        var command = new ManufactureComponentCommand(
-            correlationId,
-            recipeId,
-            1
-        );
+            var updated = await Sender.Send(new GetOrdersQuery());
+            _recentOrders = updated.OrderByDescending(o => o.CreatedAt).ToList();
 
-        Logger.LogInformation("[HQ] Sending production command for {RecipeId} (ID: {CorrelationId})",
-            recipeId, correlationId);
+            var inv = await Sender.Send(new GetInventoryQuery());
+            _inventoryItems = inv.Items;
 
-        await Bus.Publish(command);
+            await InvokeAsync(StateHasChanged);
+        }
+        catch (ObjectDisposedException) { }
     }
 
+    public void Dispose() => ConsensusEvents.OnConsensusReached -= HandleConsensus;
+
+    private void GoToOrder(Guid id) => NavManager.NavigateTo("/orders/" + id);
+
+    private static string StatusBadge(ProductionOrderStatus s) => s switch
+    {
+        ProductionOrderStatus.Completed  => "bg-success",
+        ProductionOrderStatus.Failed     => "bg-danger",
+        ProductionOrderStatus.InProgress => "bg-primary",
+        ProductionOrderStatus.Cancelled  => "bg-secondary",
+        _                                => "bg-warning text-dark"
+    };
+
+    private record ConsensusEvent(string RecipeId, ConsensusVerdict Verdict, double Accuracy, DateTime Time);
 }
