@@ -73,6 +73,22 @@ public class IssueProductionOrderCommandHandlerTests
         }
     }
 
+    private class MockInventoryRepository : IInventoryRepository
+    {
+        private readonly HqInventory _inventory;
+
+        public MockInventoryRepository(HqInventory? inventory = null)
+        {
+            _inventory = inventory ?? new HqInventory();
+        }
+
+        public Task<HqInventory> GetAsync(CancellationToken cancellationToken = default)
+            => Task.FromResult(_inventory);
+
+        public Task SaveAsync(HqInventory inventory, CancellationToken cancellationToken = default)
+            => Task.CompletedTask;
+    }
+
     [Fact]
     public async Task Handle_RecipeExists_AddsOrderAndDispatches()
     {
@@ -81,7 +97,8 @@ public class IssueProductionOrderCommandHandlerTests
             { Recipe = new Recipe("recipe1", 10.0, new List<Ingredient>(), new List<Product>()) };
         var repo = new MockOrderRepository();
         var dispatcher = new MockOrderDispatcher();
-        var handler = new IssueProductionOrderCommandHandler(catalog, repo, dispatcher);
+        var inventoryRepo = new MockInventoryRepository();
+        var handler = new IssueProductionOrderCommandHandler(catalog, repo, inventoryRepo, dispatcher);
 
         var command = new IssueProductionOrderCommand("recipe1", 100);
 
@@ -102,7 +119,8 @@ public class IssueProductionOrderCommandHandlerTests
         var catalog = new MockCatalog { Recipe = null };
         var repo = new MockOrderRepository();
         var dispatcher = new MockOrderDispatcher();
-        var handler = new IssueProductionOrderCommandHandler(catalog, repo, dispatcher);
+        var inventoryRepo = new MockInventoryRepository();
+        var handler = new IssueProductionOrderCommandHandler(catalog, repo, inventoryRepo, dispatcher);
 
         var command = new IssueProductionOrderCommand("recipe1", 100);
 

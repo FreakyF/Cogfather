@@ -10,15 +10,18 @@ public class IssueProductionOrderCommandHandler : IRequestHandler<IssueProductio
 {
     private readonly IProductionCatalog _catalog;
     private readonly IOrderDispatcher _dispatcher;
+    private readonly IInventoryRepository _inventoryRepository;
     private readonly IProductionOrderRepository _orderRepository;
 
     public IssueProductionOrderCommandHandler(
         IProductionCatalog catalog,
         IProductionOrderRepository orderRepository,
+        IInventoryRepository inventoryRepository,
         IOrderDispatcher dispatcher)
     {
         _catalog = catalog;
         _orderRepository = orderRepository;
+        _inventoryRepository = inventoryRepository;
         _dispatcher = dispatcher;
     }
 
@@ -27,8 +30,12 @@ public class IssueProductionOrderCommandHandler : IRequestHandler<IssueProductio
         var recipe = await _catalog.GetRecipeAsync(request.RecipeId, cancellationToken)
                      ?? throw new RecipeNotFoundException(request.RecipeId);
 
+        var inventory = await _inventoryRepository.GetAsync(cancellationToken);
+
         var issued = new HashSet<string>();
-        await IssueSubOrdersAsync(recipe, request.TargetAmount, new HashSet<string>(), issued, cancellationToken);
+        await IssueSubOrdersAsync(recipe, request.TargetAmount, new HashSet<string>(), issued, inventory, cancellationToken);
+
+        await _inventoryRepository.SaveAsync(inventory, cancellationToken);
 
         return await IssueOrderAsync(recipe, request.TargetAmount, cancellationToken);
     }
@@ -38,6 +45,7 @@ public class IssueProductionOrderCommandHandler : IRequestHandler<IssueProductio
         double targetAmount,
         HashSet<string> processing,
         HashSet<string> issued,
+        HqInventory inventory,
         CancellationToken cancellationToken)
     {
         if (!processing.Add(recipe.Id)) return;
@@ -51,11 +59,21 @@ public class IssueProductionOrderCommandHandler : IRequestHandler<IssueProductio
         {
             var subRecipe = await _catalog.GetRecipeAsync(ingredient.ComponentId, cancellationToken);
             if (subRecipe == null) continue;
+
+            var totalNeeded = craftsNeeded * ingredient.Amount;
+
+            if (inventory.Items.TryGetValue(ingredient.ComponentId, out var available) && available > 0)
+            {
+                var toConsume = Math.Min(available, totalNeeded);
+                inventory.Remove(ingredient.ComponentId, toConsume);
+                totalNeeded -= toConsume;
+            }
+
+            if (totalNeeded <= 0) continue;
             if (!issued.Add(subRecipe.Id)) continue;
 
-            var subTargetAmount = craftsNeeded * ingredient.Amount;
-            await IssueSubOrdersAsync(subRecipe, subTargetAmount, processing, issued, cancellationToken);
-            await IssueOrderAsync(subRecipe, subTargetAmount, cancellationToken);
+            await IssueSubOrdersAsync(subRecipe, totalNeeded, processing, issued, inventory, cancellationToken);
+            await IssueOrderAsync(subRecipe, totalNeeded, cancellationToken);
         }
     }
 
