@@ -9,6 +9,8 @@ public class RabbitMqOptions
     public string OrdersExchange { get; set; } = "cogfather.orders";
     public string ReportsExchange { get; set; } = "cogfather.reports";
     public string FaultsExchange { get; set; } = "cogfather.faults";
+    public string LogsExchange { get; set; } = "cogfather.logs";
     public string HeartbeatQueue { get; set; } = "cogfather.hq.heartbeats";
     public string ReportsQueue { get; set; } = "cogfather.hq.reports";
+    public string LogsQueue { get; set; } = "cogfather.hq.logs";
 }

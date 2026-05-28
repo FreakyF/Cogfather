@@ -1,0 +1,52 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: recipes-config
+  namespace: cogfather
+data:
+  recipes.json: |
+    {
+      "wooden-chest": {
+        "name": "wooden-chest",
+        "energy": 0.5,
+        "ingredients": [{ "name": "wood", "amount": 2, "type": "item" }],
+        "products": [{ "name": "wooden-chest", "amount": 1, "probability": 1.0, "type": "item" }]
+      },
+      "iron-plate": {
+        "name": "iron-plate",
+        "energy": 3.5,
+        "ingredients": [{ "name": "iron-ore", "amount": 1, "type": "item" }],
+        "products": [{ "name": "iron-plate", "amount": 1, "probability": 1.0, "type": "item" }]
+      },
+      "copper-cable": {
+        "name": "copper-cable",
+        "energy": 0.5,
+        "ingredients": [{ "name": "copper-plate", "amount": 1, "type": "item" }],
+        "products": [{ "name": "copper-cable", "amount": 2, "probability": 1.0, "type": "item" }]
+      },
+      "iron-gear-wheel": {
+        "name": "iron-gear-wheel",
+        "energy": 0.5,
+        "ingredients": [{ "name": "iron-plate", "amount": 2, "type": "item" }],
+        "products": [{ "name": "iron-gear-wheel", "amount": 1, "probability": 1.0, "type": "item" }]
+      },
+      "electronic-circuit": {
+        "name": "electronic-circuit",
+        "energy": 0.5,
+        "ingredients": [
+          { "name": "iron-plate", "amount": 1, "type": "item" },
+          { "name": "copper-cable", "amount": 3, "type": "item" }
+        ],
+        "products": [{ "name": "electronic-circuit", "amount": 1, "probability": 1.0, "type": "item" }]
+      },
+      "inserter": {
+        "name": "inserter",
+        "energy": 0.5,
+        "ingredients": [
+          { "name": "iron-plate", "amount": 1, "type": "item" },
+          { "name": "iron-gear-wheel", "amount": 1, "type": "item" },
+          { "name": "electronic-circuit", "amount": 1, "type": "item" }
+        ],
+        "products": [{ "name": "inserter", "amount": 1, "probability": 1.0, "type": "item" }]
+      }
+    }

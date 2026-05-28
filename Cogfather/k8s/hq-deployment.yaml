@@ -1,0 +1,96 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: cogfather-hq
+  namespace: cogfather
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: cogfather-hq
+  template:
+    metadata:
+      labels:
+        app: cogfather-hq
+    spec:
+      containers:
+        - name: hq
+          image: cogfather-hq:latest
+          imagePullPolicy: Never
+          ports:
+            - containerPort: 8080
+          env:
+            - name: ASPNETCORE_ENVIRONMENT
+              value: Production
+            - name: ASPNETCORE_URLS
+              value: http://+:8080
+            - name: ConnectionStrings__HqDb
+              value: "Data Source=/data/cogfather-hq.db"
+            - name: ConnectionStrings__AuthDb
+              value: "Data Source=/data/cogfather-auth.db"
+            - name: RabbitMq__Host
+              value: rabbitmq
+            - name: RabbitMq__Port
+              value: "5672"
+            - name: RabbitMq__Username
+              value: guest
+            - name: RabbitMq__Password
+              value: guest
+            - name: RecipeBook__FilePath
+              value: /app/recipes.json
+          volumeMounts:
+            - name: hq-data
+              mountPath: /data
+            - name: recipes
+              mountPath: /app/recipes.json
+              subPath: recipes.json
+          livenessProbe:
+            httpGet:
+              path: /api/v1/health
+              port: 8080
+            initialDelaySeconds: 30
+            periodSeconds: 15
+          readinessProbe:
+            httpGet:
+              path: /api/v1/health
+              port: 8080
+            initialDelaySeconds: 10
+            periodSeconds: 5
+          resources:
+            requests:
+              memory: 128Mi
+              cpu: 100m
+            limits:
+              memory: 512Mi
+      volumes:
+        - name: hq-data
+          persistentVolumeClaim:
+            claimName: hq-sqlite-pvc
+        - name: recipes
+          configMap:
+            name: recipes-config
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: hq-sqlite-pvc
+  namespace: cogfather
+spec:
+  accessModes: [ReadWriteOnce]
+  resources:
+    requests:
+      storage: 1Gi
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: cogfather-hq-svc
+  namespace: cogfather
+spec:
+  selector:
+    app: cogfather-hq
+  type: NodePort
+  ports:
+    - port: 8080
+      targetPort: 8080
+      nodePort: 30080

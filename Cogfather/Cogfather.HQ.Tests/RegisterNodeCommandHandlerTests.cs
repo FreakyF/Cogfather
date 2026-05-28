@@ -1,3 +1,4 @@
+using Microsoft.Extensions.Logging;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
@@ -42,7 +43,7 @@ public class RegisterNodeCommandHandlerTests
     {
         // Arrange
         var repo = new MockNodeRepository();
-        var handler = new RegisterNodeCommandHandler(repo);
+        var handler = new RegisterNodeCommandHandler(repo, Microsoft.Extensions.Logging.Abstractions.NullLogger<RegisterNodeCommandHandler>.Instance);
         var command = new RegisterNodeCommand("node1", "http://addr");
 
         // Act
@@ -59,7 +60,7 @@ public class RegisterNodeCommandHandlerTests
         // Arrange
         var repo = new MockNodeRepository();
         repo.Nodes.Add(new NodeRegistration("node1", "old"));
-        var handler = new RegisterNodeCommandHandler(repo);
+        var handler = new RegisterNodeCommandHandler(repo, Microsoft.Extensions.Logging.Abstractions.NullLogger<RegisterNodeCommandHandler>.Instance);
         var command = new RegisterNodeCommand("node1", "new");
 
         // Act

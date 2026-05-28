@@ -51,4 +51,61 @@ public class ConsensusEngineTests
         Assert.Equal(expectedVerdict, result.Verdict);
         Assert.Equal(expectedAccuracy, result.Accuracy, 5);
     }
+
+    [Fact]
+    public async Task EvaluateAsync_Approved_ByzantineIdsAreFailingNodes()
+    {
+        var engine = new ConsensusEngine();
+        // 3/4 = 0.75 > 2/3 threshold → Approved; node3 is the Byzantine minority
+        var reports = new List<ProductionReport>
+        {
+            new(Guid.NewGuid(), "node0", "r", true),
+            new(Guid.NewGuid(), "node1", "r", true),
+            new(Guid.NewGuid(), "node2", "r", true),
+            new(Guid.NewGuid(), "node3", "r", false),
+        };
+
+        var result = await engine.EvaluateAsync("r", reports);
+
+        Assert.Equal(ConsensusVerdict.Approved, result.Verdict);
+        Assert.Single(result.ByzantineNodeIds);
+        Assert.Contains("node3", result.ByzantineNodeIds);
+    }
+
+    [Fact]
+    public async Task EvaluateAsync_Rejected_ByzantineIdsAreSucceedingNodes()
+    {
+        var engine = new ConsensusEngine();
+        // 3/4 failures = 0.75 > 2/3 threshold → Rejected; node3 is the Byzantine minority
+        var reports = new List<ProductionReport>
+        {
+            new(Guid.NewGuid(), "node0", "r", false),
+            new(Guid.NewGuid(), "node1", "r", false),
+            new(Guid.NewGuid(), "node2", "r", false),
+            new(Guid.NewGuid(), "node3", "r", true),
+        };
+
+        var result = await engine.EvaluateAsync("r", reports);
+
+        Assert.Equal(ConsensusVerdict.Rejected, result.Verdict);
+        Assert.Single(result.ByzantineNodeIds);
+        Assert.Contains("node3", result.ByzantineNodeIds);
+    }
+
+    [Fact]
+    public async Task EvaluateAsync_Inconclusive_NoByzantineIds()
+    {
+        var engine = new ConsensusEngine();
+        var reports = new List<ProductionReport>
+        {
+            new(Guid.NewGuid(), "node0", "r", true),
+            new(Guid.NewGuid(), "node1", "r", false),
+            new(Guid.NewGuid(), "node2", "r", true),
+        };
+
+        var result = await engine.EvaluateAsync("r", reports);
+
+        Assert.Equal(ConsensusVerdict.Inconclusive, result.Verdict);
+        Assert.Empty(result.ByzantineNodeIds);
+    }
 }

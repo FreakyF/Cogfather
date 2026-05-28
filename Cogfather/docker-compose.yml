@@ -1,17 +1,96 @@
 services:
   rabbitmq:
-    image: rabbitmq:4.2.5-management-alpine
+    image: rabbitmq:4-management-alpine
     container_name: cogfather-rabbitmq
-    network_mode: host
+    ports:
+      - "5672:5672"
+      - "15672:15672"
     environment:
       RABBITMQ_DEFAULT_USER: guest
       RABBITMQ_DEFAULT_PASS: guest
+    volumes:
+      - rabbit-data:/var/lib/rabbitmq
+    healthcheck:
+      test: ["CMD", "rabbitmq-diagnostics", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
 
-  postgres:
-    image: postgres:18.3-alpine3.23
-    container_name: cogfather-postgres
-    network_mode: host
+  hq:
+    build:
+      context: .
+      dockerfile: Cogfather.HQ.UI/Dockerfile
+    container_name: cogfather-hq
+    ports:
+      - "8080:8080"
     environment:
-      POSTGRES_USER: cogfather
-      POSTGRES_PASSWORD: secretpassword
-      POSTGRES_DB: hq_database
+      ASPNETCORE_ENVIRONMENT: Production
+      ASPNETCORE_URLS: http://+:8080
+      ConnectionStrings__HqDb: "Data Source=/data/cogfather-hq.db"
+      ConnectionStrings__AuthDb: "Data Source=/data/cogfather-auth.db"
+      RabbitMq__Host: rabbitmq
+      RabbitMq__Port: 5672
+      RabbitMq__Username: guest
+      RabbitMq__Password: guest
+      RecipeBook__FilePath: /app/recipes.json
+    volumes:
+      - hq-data:/data
+      - ./recipes.json:/app/recipes.json:ro
+    depends_on:
+      rabbitmq:
+        condition: service_healthy
+
+  node-alpha:
+    build:
+      context: .
+      dockerfile: Cogfather.Node.Worker/Dockerfile
+    container_name: cogfather-node-alpha
+    environment:
+      Node__Id: "aaaaaaaa-0000-0000-0000-000000000001"
+      Node__DisplayName: "Worker Node Alpha"
+      RabbitMq__Host: rabbitmq
+      RabbitMq__Port: 5672
+      RabbitMq__Username: guest
+      RabbitMq__Password: guest
+      Fault__ActiveFault: 0
+    depends_on:
+      rabbitmq:
+        condition: service_healthy
+
+  node-beta:
+    build:
+      context: .
+      dockerfile: Cogfather.Node.Worker/Dockerfile
+    container_name: cogfather-node-beta
+    environment:
+      Node__Id: "bbbbbbbb-0000-0000-0000-000000000002"
+      Node__DisplayName: "Worker Node Beta"
+      RabbitMq__Host: rabbitmq
+      RabbitMq__Port: 5672
+      RabbitMq__Username: guest
+      RabbitMq__Password: guest
+      Fault__ActiveFault: 0
+    depends_on:
+      rabbitmq:
+        condition: service_healthy
+
+  node-gamma:
+    build:
+      context: .
+      dockerfile: Cogfather.Node.Worker/Dockerfile
+    container_name: cogfather-node-gamma
+    environment:
+      Node__Id: "cccccccc-0000-0000-0000-000000000003"
+      Node__DisplayName: "Worker Node Gamma"
+      RabbitMq__Host: rabbitmq
+      RabbitMq__Port: 5672
+      RabbitMq__Username: guest
+      RabbitMq__Password: guest
+      Fault__ActiveFault: 0
+    depends_on:
+      rabbitmq:
+        condition: service_healthy
+
+volumes:
+  rabbit-data:
+  hq-data:

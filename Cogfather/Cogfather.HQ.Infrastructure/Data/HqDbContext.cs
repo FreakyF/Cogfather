@@ -47,6 +47,8 @@ public class HqDbContext : DbContext
             b.Property(n => n.FaultMode).HasConversion(
                 v => v.ToString(),
                 v => Enum.Parse<FaultMode>(v));
+            b.Property(n => n.ReputationScore).HasDefaultValue(100);
+            b.Property(n => n.ByzantineFaultCount).HasDefaultValue(0);
         });
 
         modelBuilder.Entity<ProductionOrder>(b =>

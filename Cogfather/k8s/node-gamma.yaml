@@ -1,0 +1,40 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: cogfather-node-gamma
+  namespace: cogfather
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: cogfather-node-gamma
+  template:
+    metadata:
+      labels:
+        app: cogfather-node-gamma
+    spec:
+      containers:
+        - name: node
+          image: cogfather-node:latest
+          imagePullPolicy: Never
+          env:
+            - name: Node__Id
+              value: "cccccccc-0000-0000-0000-000000000003"
+            - name: Node__DisplayName
+              value: "Worker Node Gamma"
+            - name: RabbitMq__Host
+              value: rabbitmq
+            - name: RabbitMq__Port
+              value: "5672"
+            - name: RabbitMq__Username
+              value: guest
+            - name: RabbitMq__Password
+              value: guest
+            - name: Fault__ActiveFault
+              value: "0"
+          resources:
+            requests:
+              memory: 64Mi
+              cpu: 50m
+            limits:
+              memory: 256Mi

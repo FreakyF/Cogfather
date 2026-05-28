@@ -8,6 +8,8 @@ using Cogfather.HQ.Application.Queries.GetAllNodes;
 using Cogfather.HQ.Application.Queries.GetInventory;
 using Cogfather.HQ.Application.Queries.GetOrderById;
 using Cogfather.HQ.Application.Queries.GetOrders;
+using Cogfather.HQ.Application.Queries.GetReportsByCorrelationId;
+using Cogfather.HQ.Application.Queries.GetReportsByRecipeId;
 using Cogfather.HQ.Domain.Entities;
 using Xunit;
 
@@ -164,5 +166,56 @@ public class QueryHandlerTests
         // Assert
         Assert.Single(result.Items);
         Assert.Equal(10, result.Items["comp1"]);
+    }
+
+    private class MockReportRepository : IProductionReportRepository
+    {
+        public List<ProductionReport> Reports { get; } = new();
+
+        public Task AddAsync(ProductionReport report, CancellationToken cancellationToken = default)
+        {
+            Reports.Add(report);
+            return Task.CompletedTask;
+        }
+
+        public Task<IEnumerable<ProductionReport>> GetByCorrelationIdAsync(Guid correlationId,
+            CancellationToken cancellationToken = default)
+            => Task.FromResult(Reports.Where(r => r.CorrelationId == correlationId));
+
+        public Task<IEnumerable<ProductionReport>> GetByRecipeIdAsync(string recipeId,
+            CancellationToken cancellationToken = default)
+            => Task.FromResult(Reports.Where(r => r.RecipeId == recipeId));
+
+        public Task<IEnumerable<ProductionReport>> GetAllAsync(CancellationToken cancellationToken = default)
+            => Task.FromResult<IEnumerable<ProductionReport>>(Reports);
+    }
+
+    [Fact]
+    public async Task GetReportsByCorrelationIdQueryHandler_ReturnsMatchingReports()
+    {
+        var repo = new MockReportRepository();
+        var correlationId = Guid.NewGuid();
+        repo.Reports.Add(new ProductionReport(correlationId, "node1", "recipe1", true));
+        repo.Reports.Add(new ProductionReport(Guid.NewGuid(), "node2", "recipe1", true));
+        var handler = new GetReportsByCorrelationIdQueryHandler(repo);
+
+        var result = (await handler.Handle(new GetReportsByCorrelationIdQuery(correlationId), CancellationToken.None)).ToList();
+
+        Assert.Single(result);
+        Assert.Equal(correlationId, result[0].CorrelationId);
+    }
+
+    [Fact]
+    public async Task GetReportsByRecipeIdQueryHandler_ReturnsMatchingReports()
+    {
+        var repo = new MockReportRepository();
+        repo.Reports.Add(new ProductionReport(Guid.NewGuid(), "node1", "recipe-a", true));
+        repo.Reports.Add(new ProductionReport(Guid.NewGuid(), "node1", "recipe-b", true));
+        var handler = new GetReportsByRecipeIdQueryHandler(repo);
+
+        var result = (await handler.Handle(new GetReportsByRecipeIdQuery("recipe-a"), CancellationToken.None)).ToList();
+
+        Assert.Single(result);
+        Assert.Equal("recipe-a", result[0].RecipeId);
     }
 }

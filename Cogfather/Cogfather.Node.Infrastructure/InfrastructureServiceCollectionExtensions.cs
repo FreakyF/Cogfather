@@ -42,6 +42,7 @@ public static class InfrastructureServiceCollectionExtensions
 
         services.AddSingleton<IInventoryStore, InMemoryInventoryStore>();
         services.AddScoped<IReportPublisher, RabbitMqReportPublisher>();
+        services.AddScoped<ISystemLogPublisher, RabbitMqSystemLogPublisher>();
 
         services.AddHostedService<RabbitMqOrderConsumerService>();
         services.AddHostedService<RabbitMqHeartbeatService>();

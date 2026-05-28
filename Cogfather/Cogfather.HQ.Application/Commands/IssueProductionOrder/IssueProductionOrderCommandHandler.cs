@@ -3,6 +3,7 @@ using Cogfather.HQ.Domain.Entities;
 using Cogfather.HQ.Domain.Exceptions;
 using Cogfather.HQ.Domain.ValueObjects;
 using MediatR;
+using Microsoft.Extensions.Logging;
 
 namespace Cogfather.HQ.Application.Commands.IssueProductionOrder;
 
@@ -11,24 +12,29 @@ public class IssueProductionOrderCommandHandler : IRequestHandler<IssueProductio
     private readonly IProductionCatalog _catalog;
     private readonly IOrderDispatcher _dispatcher;
     private readonly IInventoryRepository _inventoryRepository;
+    private readonly ILogger<IssueProductionOrderCommandHandler> _logger;
     private readonly IProductionOrderRepository _orderRepository;
 
     public IssueProductionOrderCommandHandler(
         IProductionCatalog catalog,
         IProductionOrderRepository orderRepository,
         IInventoryRepository inventoryRepository,
-        IOrderDispatcher dispatcher)
+        IOrderDispatcher dispatcher,
+        ILogger<IssueProductionOrderCommandHandler> logger)
     {
         _catalog = catalog;
         _orderRepository = orderRepository;
         _inventoryRepository = inventoryRepository;
         _dispatcher = dispatcher;
+        _logger = logger;
     }
 
     public async Task<Guid> Handle(IssueProductionOrderCommand request, CancellationToken cancellationToken)
     {
         var recipe = await _catalog.GetRecipeAsync(request.RecipeId, cancellationToken)
                      ?? throw new RecipeNotFoundException(request.RecipeId);
+
+        _logger.LogInformation("Issuing order: {RecipeId} × {Amount}", request.RecipeId, request.TargetAmount);
 
         var inventory = await _inventoryRepository.GetAsync(cancellationToken);
 
@@ -41,10 +47,15 @@ public class IssueProductionOrderCommandHandler : IRequestHandler<IssueProductio
         {
             var subRecipe = await _catalog.GetRecipeAsync(subRecipeId, cancellationToken);
             if (subRecipe != null)
+            {
+                _logger.LogInformation("Sub-order: {RecipeId} × {Amount}", subRecipeId, amount);
                 await IssueOrderAsync(subRecipe, amount, cancellationToken);
+            }
         }
 
-        return await IssueOrderAsync(recipe, request.TargetAmount, cancellationToken);
+        var orderId = await IssueOrderAsync(recipe, request.TargetAmount, cancellationToken);
+        _logger.LogInformation("Order dispatched: {OrderId} ({RecipeId} × {Amount})", orderId, request.RecipeId, request.TargetAmount);
+        return orderId;
     }
 
     private async Task CollectSubOrdersAsync(

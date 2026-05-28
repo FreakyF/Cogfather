@@ -5575,11 +5575,5 @@
         "type": "item"
       }
     ]
-  },
-  "recipe-unknown": {
-    "name": "recipe-unknown",
-    "energy": 0,
-    "ingredients": {},
-    "products": {}
   }
 }

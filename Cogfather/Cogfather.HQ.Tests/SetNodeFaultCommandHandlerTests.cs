@@ -1,3 +1,4 @@
+using Microsoft.Extensions.Logging;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -46,7 +47,7 @@ public class SetNodeFaultCommandHandlerTests
         var repo = new MockNodeRepository();
         var node = new NodeRegistration("node1", "addr");
         repo.Nodes.Add(node);
-        var handler = new SetNodeFaultCommandHandler(repo);
+        var handler = new SetNodeFaultCommandHandler(repo, Microsoft.Extensions.Logging.Abstractions.NullLogger<SetNodeFaultCommandHandler>.Instance);
         var command = new SetNodeFaultCommand("node1", FaultMode.Byzantine);
 
         // Act
@@ -61,7 +62,7 @@ public class SetNodeFaultCommandHandlerTests
     {
         // Arrange
         var repo = new MockNodeRepository();
-        var handler = new SetNodeFaultCommandHandler(repo);
+        var handler = new SetNodeFaultCommandHandler(repo, Microsoft.Extensions.Logging.Abstractions.NullLogger<SetNodeFaultCommandHandler>.Instance);
         var command = new SetNodeFaultCommand("node1", FaultMode.Byzantine);
 
         // Act & Assert

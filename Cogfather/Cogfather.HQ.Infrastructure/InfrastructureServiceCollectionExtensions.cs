@@ -5,6 +5,7 @@ using Cogfather.HQ.Infrastructure.Data;
 using Cogfather.HQ.Infrastructure.Identity;
 using Cogfather.HQ.Infrastructure.Messaging;
 using Cogfather.HQ.Infrastructure.Repositories;
+using Cogfather.HQ.Infrastructure.Serilog;
 using Cogfather.HQ.Infrastructure.Services;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
@@ -45,6 +46,8 @@ public static class InfrastructureServiceCollectionExtensions
         services.AddScoped<IInventoryRepository, InventoryRepository>();
 
         services.AddSingleton<InventoryUpdateLock>();
+        services.AddSingleton<SystemLogService>();
+        services.AddSingleton<SystemLogSink>();
 
         services.AddSingleton<IRecipeBook, JsonRecipeBook>();
         services.AddSingleton<IProductionCatalog, ProductionCatalog>();
@@ -84,6 +87,7 @@ public static class InfrastructureServiceCollectionExtensions
 
         services.AddHostedService<RabbitMqConsumerService>();
         services.AddHostedService<HeartbeatConsumerService>();
+        services.AddHostedService<RabbitMqLogConsumerService>();
 
         services.AddHealthChecks()
             .AddDbContextCheck<HqDbContext>()

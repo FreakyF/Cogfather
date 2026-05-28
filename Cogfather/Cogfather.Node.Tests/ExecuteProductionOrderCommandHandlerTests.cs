@@ -90,6 +90,12 @@ public class ExecuteProductionOrderCommandHandlerTests
         }
     }
 
+    private class MockSystemLogPublisher : ISystemLogPublisher
+    {
+        public Task PublishAsync(string level, string category, string message, CancellationToken cancellationToken = default)
+            => Task.CompletedTask;
+    }
+
     private class MockLogger<T> : ILogger<T>
     {
         public IDisposable BeginScope<TState>(TState state)
@@ -121,7 +127,7 @@ public class ExecuteProductionOrderCommandHandlerTests
         var logger = new MockLogger<ExecuteProductionOrderCommandHandler>();
 
         var handler = new ExecuteProductionOrderCommandHandler(executionService, store, publisher, hashService,
-            faultInjector, identity, logger);
+            faultInjector, identity, new MockSystemLogPublisher(), logger);
         var command = new ExecuteProductionOrderCommand(Guid.NewGuid(), "comp1", 10);
 
         // Act
@@ -152,7 +158,7 @@ public class ExecuteProductionOrderCommandHandlerTests
         var logger = new MockLogger<ExecuteProductionOrderCommandHandler>();
 
         var handler = new ExecuteProductionOrderCommandHandler(executionService, store, publisher, hashService,
-            faultInjector, identity, logger);
+            faultInjector, identity, new MockSystemLogPublisher(), logger);
         var command = new ExecuteProductionOrderCommand(Guid.NewGuid(), "comp1", 10);
 
         // Act

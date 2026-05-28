@@ -1,3 +1,4 @@
+using Microsoft.Extensions.Logging;
 using System;
 using System.Collections.Generic;
 using System.Threading;
@@ -17,15 +18,19 @@ public class IssueProductionOrderCommandHandlerTests
     private class MockCatalog : IProductionCatalog
     {
         public Recipe? Recipe { get; set; }
+        public Dictionary<string, Recipe> Recipes { get; } = new();
 
         public Task<Recipe?> GetRecipeAsync(string recipeId, CancellationToken cancellationToken = default)
         {
-            return Task.FromResult(Recipe);
+            if (Recipes.TryGetValue(recipeId, out var r)) return Task.FromResult<Recipe?>(r);
+            return Task.FromResult(Recipe?.Id == recipeId ? Recipe : null);
         }
 
         public Task<IEnumerable<Recipe>> GetAllRecipesAsync(CancellationToken cancellationToken = default)
         {
-            return Task.FromResult(Recipe == null ? Enumerable.Empty<Recipe>() : new[] { Recipe });
+            var all = Recipes.Values.ToList();
+            if (Recipe != null) all.Add(Recipe);
+            return Task.FromResult<IEnumerable<Recipe>>(all);
         }
     }
 
@@ -100,11 +105,11 @@ public class IssueProductionOrderCommandHandlerTests
     {
         // Arrange
         var catalog = new MockCatalog
-            { Recipe = new Recipe("recipe1", 10.0, new List<Ingredient>(), new List<Product>()) };
+        { Recipe = new Recipe("recipe1", 10.0, new List<Ingredient>(), new List<Product>()) };
         var repo = new MockOrderRepository();
         var dispatcher = new MockOrderDispatcher();
         var inventoryRepo = new MockInventoryRepository();
-        var handler = new IssueProductionOrderCommandHandler(catalog, repo, inventoryRepo, dispatcher);
+        var handler = new IssueProductionOrderCommandHandler(catalog, repo, inventoryRepo, dispatcher, Microsoft.Extensions.Logging.Abstractions.NullLogger<IssueProductionOrderCommandHandler>.Instance);
 
         var command = new IssueProductionOrderCommand("recipe1", 100);
 
@@ -126,11 +131,73 @@ public class IssueProductionOrderCommandHandlerTests
         var repo = new MockOrderRepository();
         var dispatcher = new MockOrderDispatcher();
         var inventoryRepo = new MockInventoryRepository();
-        var handler = new IssueProductionOrderCommandHandler(catalog, repo, inventoryRepo, dispatcher);
+        var handler = new IssueProductionOrderCommandHandler(catalog, repo, inventoryRepo, dispatcher, Microsoft.Extensions.Logging.Abstractions.NullLogger<IssueProductionOrderCommandHandler>.Instance);
 
         var command = new IssueProductionOrderCommand("recipe1", 100);
 
         // Act & Assert
         await Assert.ThrowsAsync<RecipeNotFoundException>(() => handler.Handle(command, CancellationToken.None));
+    }
+
+    [Fact]
+    public async Task Handle_RecipeWithIngredients_IssuesSubOrders()
+    {
+        // copper-cable recipe (ingredient for wire)
+        var cableRecipe = new Recipe("copper-cable", 1.0,
+            [],
+            [new Product("copper-cable", 2)]);
+
+        // wire recipe needs copper-cable
+        var wireRecipe = new Recipe("wire", 1.0,
+            [new Ingredient("copper-cable", 1)],
+            [new Product("wire", 1)]);
+
+        var catalog = new MockCatalog();
+        catalog.Recipes["wire"] = wireRecipe;
+        catalog.Recipes["copper-cable"] = cableRecipe;
+
+        var repo = new MockOrderRepository();
+        var dispatcher = new MockOrderDispatcher();
+        var inventoryRepo = new MockInventoryRepository();
+        var handler = new IssueProductionOrderCommandHandler(catalog, repo, inventoryRepo, dispatcher,
+            Microsoft.Extensions.Logging.Abstractions.NullLogger<IssueProductionOrderCommandHandler>.Instance);
+
+        await handler.Handle(new IssueProductionOrderCommand("wire", 2), CancellationToken.None);
+
+        // Expect 2 orders: one for copper-cable sub-order, one for wire
+        Assert.Equal(2, repo.Orders.Count);
+        Assert.Contains(repo.Orders, o => o.RecipeId == "copper-cable");
+        Assert.Contains(repo.Orders, o => o.RecipeId == "wire");
+    }
+
+    [Fact]
+    public async Task Handle_IngredientAlreadyInInventory_ConsumesInventoryBeforeIssuingSubOrder()
+    {
+        var cableRecipe = new Recipe("copper-cable", 1.0,
+            [],
+            [new Product("copper-cable", 2)]);
+
+        var wireRecipe = new Recipe("wire", 1.0,
+            [new Ingredient("copper-cable", 2)],
+            [new Product("wire", 1)]);
+
+        var catalog = new MockCatalog();
+        catalog.Recipes["wire"] = wireRecipe;
+        catalog.Recipes["copper-cable"] = cableRecipe;
+
+        var inventory = new HqInventory();
+        inventory.Add("copper-cable", 10); // enough to satisfy demand
+        var inventoryRepo = new MockInventoryRepository(inventory);
+
+        var repo = new MockOrderRepository();
+        var dispatcher = new MockOrderDispatcher();
+        var handler = new IssueProductionOrderCommandHandler(catalog, repo, inventoryRepo, dispatcher,
+            Microsoft.Extensions.Logging.Abstractions.NullLogger<IssueProductionOrderCommandHandler>.Instance);
+
+        await handler.Handle(new IssueProductionOrderCommand("wire", 1), CancellationToken.None);
+
+        // Only main order, no sub-order needed since inventory covered the ingredient
+        Assert.Single(repo.Orders);
+        Assert.Equal("wire", repo.Orders[0].RecipeId);
     }
 }

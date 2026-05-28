@@ -28,13 +28,23 @@ public class ConsensusEngine : IConsensusEngine
         var accuracy = (double)Math.Max(successCount, failureCount) / total;
 
         ConsensusVerdict verdict;
+        IReadOnlyList<string> byzantineIds;
         if (successCount > total * QuorumThreshold)
+        {
             verdict = ConsensusVerdict.Approved;
+            byzantineIds = reportList.Where(r => !r.Success).Select(r => r.NodeId).ToList();
+        }
         else if (failureCount > total * QuorumThreshold)
+        {
             verdict = ConsensusVerdict.Rejected;
+            byzantineIds = reportList.Where(r => r.Success).Select(r => r.NodeId).ToList();
+        }
         else
+        {
             verdict = ConsensusVerdict.Inconclusive;
+            byzantineIds = [];
+        }
 
-        return Task.FromResult(new ConsensusResult(recipeId, verdict, accuracy));
+        return Task.FromResult(new ConsensusResult(recipeId, verdict, accuracy, byzantineIds));
     }
 }

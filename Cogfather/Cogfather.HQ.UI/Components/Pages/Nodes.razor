@@ -56,6 +56,20 @@ else
                                     @node.FaultMode
                                 </span>
                             </dd>
+                            <dt class="col-5">Reputation</dt>
+                            <dd class="col-7">
+                                <div class="d-flex align-items-center gap-1">
+                                    <div class="progress flex-grow-1" style="height:8px" title="@node.ReputationScore / 100">
+                                        <div class="progress-bar @ReputationBarClass(node.ReputationScore)"
+                                             style="width:@node.ReputationScore%"></div>
+                                    </div>
+                                    <span class="text-muted">@node.ReputationScore</span>
+                                </div>
+                                @if (node.ByzantineFaultCount > 0)
+                                {
+                                    <span class="badge bg-danger mt-1">@node.ByzantineFaultCount fault@(node.ByzantineFaultCount == 1 ? "" : "s")</span>
+                                }
+                            </dd>
                         </dl>
 
                         <hr class="my-2"/>
@@ -166,4 +180,11 @@ else
             _working = null;
         }
     }
+
+    private static string ReputationBarClass(int score) => score switch
+    {
+        >= 80 => "bg-success",
+        >= 40 => "bg-warning",
+        _ => "bg-danger"
+    };
 }

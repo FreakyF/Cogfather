@@ -79,3 +79,14 @@ Icon?
 .fuse_hidden*
 .directory
 .Trash-*
+# SQLite databases
+*.db
+*.db-shm
+*.db-wal
+
+# Runtime PID files
+.worker-pids
+.hq-pid
+
+# Coverage results directories
+coverage-results/
