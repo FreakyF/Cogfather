@@ -99,6 +99,12 @@ public class ReceiveProductionReportCommandHandlerTests
 
         public Task SaveAsync(HqInventory inventory, CancellationToken cancellationToken = default)
             => Task.CompletedTask;
+
+        public Task AddItemAsync(string componentId, double amount, CancellationToken cancellationToken = default)
+        {
+            Inventory.Add(componentId, amount);
+            return Task.CompletedTask;
+        }
     }
 
     private class MockNodeRepository : INodeRepository

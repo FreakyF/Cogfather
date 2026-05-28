@@ -32,19 +32,26 @@ public class IssueProductionOrderCommandHandler : IRequestHandler<IssueProductio
 
         var inventory = await _inventoryRepository.GetAsync(cancellationToken);
 
-        var issued = new HashSet<string>();
-        await IssueSubOrdersAsync(recipe, request.TargetAmount, new HashSet<string>(), issued, inventory, cancellationToken);
+        var pending = new Dictionary<string, double>();
+        await CollectSubOrdersAsync(recipe, request.TargetAmount, new HashSet<string>(), pending, inventory, cancellationToken);
 
         await _inventoryRepository.SaveAsync(inventory, cancellationToken);
+
+        foreach (var (subRecipeId, amount) in pending)
+        {
+            var subRecipe = await _catalog.GetRecipeAsync(subRecipeId, cancellationToken);
+            if (subRecipe != null)
+                await IssueOrderAsync(subRecipe, amount, cancellationToken);
+        }
 
         return await IssueOrderAsync(recipe, request.TargetAmount, cancellationToken);
     }
 
-    private async Task IssueSubOrdersAsync(
+    private async Task CollectSubOrdersAsync(
         Recipe recipe,
         double targetAmount,
         HashSet<string> processing,
-        HashSet<string> issued,
+        Dictionary<string, double> pending,
         HqInventory inventory,
         CancellationToken cancellationToken)
     {
@@ -70,11 +77,13 @@ public class IssueProductionOrderCommandHandler : IRequestHandler<IssueProductio
             }
 
             if (totalNeeded <= 0) continue;
-            if (!issued.Add(subRecipe.Id)) continue;
 
-            await IssueSubOrdersAsync(subRecipe, totalNeeded, processing, issued, inventory, cancellationToken);
-            await IssueOrderAsync(subRecipe, totalNeeded, cancellationToken);
+            pending[subRecipe.Id] = pending.GetValueOrDefault(subRecipe.Id) + totalNeeded;
+
+            await CollectSubOrdersAsync(subRecipe, totalNeeded, processing, pending, inventory, cancellationToken);
         }
+
+        processing.Remove(recipe.Id);
     }
 
     private async Task<Guid> IssueOrderAsync(Recipe recipe, double targetAmount, CancellationToken cancellationToken)

@@ -44,6 +44,8 @@ public static class InfrastructureServiceCollectionExtensions
         services.AddScoped<INodeRepository, NodeRepository>();
         services.AddScoped<IInventoryRepository, InventoryRepository>();
 
+        services.AddSingleton<InventoryUpdateLock>();
+
         services.AddSingleton<IRecipeBook, JsonRecipeBook>();
         services.AddSingleton<IProductionCatalog, ProductionCatalog>();
 

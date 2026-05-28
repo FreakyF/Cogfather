@@ -87,6 +87,12 @@ public class IssueProductionOrderCommandHandlerTests
 
         public Task SaveAsync(HqInventory inventory, CancellationToken cancellationToken = default)
             => Task.CompletedTask;
+
+        public Task AddItemAsync(string componentId, double amount, CancellationToken cancellationToken = default)
+        {
+            _inventory.Add(componentId, amount);
+            return Task.CompletedTask;
+        }
     }
 
     [Fact]

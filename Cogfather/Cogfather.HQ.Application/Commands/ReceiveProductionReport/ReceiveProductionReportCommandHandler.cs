@@ -79,8 +79,6 @@ public class ReceiveProductionReportCommandHandler : IRequestHandler<ReceiveProd
         var craftsNeeded = Math.Ceiling(targetAmount / outputPerCraft);
         var actualProduced = craftsNeeded * outputPerCraft;
 
-        var inventory = await _inventoryRepository.GetAsync(cancellationToken);
-        inventory.Add(primaryProduct.ComponentId, actualProduced);
-        await _inventoryRepository.SaveAsync(inventory, cancellationToken);
+        await _inventoryRepository.AddItemAsync(primaryProduct.ComponentId, actualProduced, cancellationToken);
     }
 }

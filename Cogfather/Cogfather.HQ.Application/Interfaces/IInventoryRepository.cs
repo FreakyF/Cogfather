@@ -6,4 +6,5 @@ public interface IInventoryRepository
 {
     Task<HqInventory> GetAsync(CancellationToken cancellationToken = default);
     Task SaveAsync(HqInventory inventory, CancellationToken cancellationToken = default);
+    Task AddItemAsync(string componentId, double amount, CancellationToken cancellationToken = default);
 }

@@ -94,6 +94,12 @@ public class QueryHandlerTests
         {
             return Task.CompletedTask;
         }
+
+        public Task AddItemAsync(string componentId, double amount, CancellationToken cancellationToken = default)
+        {
+            Inventory.Add(componentId, amount);
+            return Task.CompletedTask;
+        }
     }
 
     [Fact]
