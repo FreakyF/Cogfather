@@ -29,12 +29,12 @@ public class ConsensusEngine : IConsensusEngine
 
         ConsensusVerdict verdict;
         IReadOnlyList<string> byzantineIds;
-        if (successCount > total * QuorumThreshold)
+        if (successCount >= total * QuorumThreshold)
         {
             verdict = ConsensusVerdict.Approved;
             byzantineIds = reportList.Where(r => !r.Success).Select(r => r.NodeId).ToList();
         }
-        else if (failureCount > total * QuorumThreshold)
+        else if (failureCount >= total * QuorumThreshold)
         {
             verdict = ConsensusVerdict.Rejected;
             byzantineIds = reportList.Where(r => r.Success).Select(r => r.NodeId).ToList();

@@ -34,8 +34,8 @@ public class QuorumReportCollector
 
         var reportCount = reports.Count();
 
-        // Minimum quorum: ceil((2n + 1) / 3) — the smallest set that rules out a Byzantine majority
-        var requiredReports = (int)Math.Ceiling((2.0 * activeCount + 1.0) / 3.0);
+        // Minimum quorum: ceil(2n / 3) — at least 2/3 of active nodes must report
+        var requiredReports = (int)Math.Ceiling(2.0 * activeCount / 3.0);
         return reportCount >= requiredReports;
     }
 }

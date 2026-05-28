@@ -27,12 +27,13 @@ public class ConsensusEngineTests
     [Theory]
     [InlineData(3, 3, ConsensusVerdict.Approved, 1.0)]
     [InlineData(3, 0, ConsensusVerdict.Rejected, 1.0)]
-    [InlineData(3, 2, ConsensusVerdict.Inconclusive, 2.0 / 3.0)] // 2/3 is not > 2/3
-    [InlineData(4, 3, ConsensusVerdict.Approved, 0.75)] // 3/4 = 0.75 > 2/3 (0.66)
-    [InlineData(4, 1, ConsensusVerdict.Rejected, 0.75)] // 3 failures
+    [InlineData(3, 2, ConsensusVerdict.Approved, 2.0 / 3.0)]  // 2/3 >= 2/3 threshold → Approved
+    [InlineData(4, 3, ConsensusVerdict.Approved, 0.75)]       // 3/4 >= 2/3 → Approved
+    [InlineData(4, 2, ConsensusVerdict.Inconclusive, 0.5)]    // 2/4 < 2/3 in either direction → Inconclusive
+    [InlineData(4, 1, ConsensusVerdict.Rejected, 0.75)]       // 3 failures >= 2/3
     [InlineData(1, 1, ConsensusVerdict.Approved, 1.0)]
-    [InlineData(10, 7, ConsensusVerdict.Approved, 0.7)] // 7/10 = 0.7 > 0.66
-    [InlineData(10, 6, ConsensusVerdict.Inconclusive, 0.6)] // 6/10 = 0.6 < 0.66
+    [InlineData(10, 7, ConsensusVerdict.Approved, 0.7)]       // 7/10 = 0.7 >= 2/3
+    [InlineData(10, 6, ConsensusVerdict.Inconclusive, 0.6)]   // 6/10 = 0.6 < 2/3 in either direction
     public async Task EvaluateAsync_WithReports_ReturnsExpectedVerdict(int total, int successCount,
         ConsensusVerdict expectedVerdict, double expectedAccuracy)
     {
@@ -96,11 +97,13 @@ public class ConsensusEngineTests
     public async Task EvaluateAsync_Inconclusive_NoByzantineIds()
     {
         var engine = new ConsensusEngine();
+        // 2 success, 2 failure from 4 nodes: neither side reaches 2/3 threshold → Inconclusive
         var reports = new List<ProductionReport>
         {
             new(Guid.NewGuid(), "node0", "r", true),
-            new(Guid.NewGuid(), "node1", "r", false),
-            new(Guid.NewGuid(), "node2", "r", true),
+            new(Guid.NewGuid(), "node1", "r", true),
+            new(Guid.NewGuid(), "node2", "r", false),
+            new(Guid.NewGuid(), "node3", "r", false),
         };
 
         var result = await engine.EvaluateAsync("r", reports);
