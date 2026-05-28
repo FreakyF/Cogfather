@@ -3,6 +3,8 @@
 @rendermode InteractiveServer
 @inject ISender Sender
 @inject Cogfather.HQ.Infrastructure.Messaging.FaultControlPublisher FaultPublisher
+@inject Cogfather.HQ.UI.Services.ConsensusEventService ConsensusEvents
+@implements IDisposable
 
 <PageTitle>Nodes — Cogfather HQ</PageTitle>
 
@@ -114,7 +116,26 @@ else
     private string? _error;
     private string? _success;
 
-    protected override async Task OnInitializedAsync() => await Refresh();
+    protected override async Task OnInitializedAsync()
+    {
+        ConsensusEvents.OnConsensusReached += HandleConsensus;
+        await Refresh();
+    }
+
+    private async void HandleConsensus(ConsensusResult _)
+    {
+        try
+        {
+            await Refresh();
+            await InvokeAsync(StateHasChanged);
+        }
+        catch (ObjectDisposedException) { }
+    }
+
+    public void Dispose()
+    {
+        ConsensusEvents.OnConsensusReached -= HandleConsensus;
+    }
 
     private async Task Refresh()
     {

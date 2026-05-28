@@ -45,7 +45,7 @@ public class RabbitMqOrderConsumerService : BackgroundService
             cancellationToken: stoppingToken);
 
         var queueName = $"cogfather.orders.{_nodeId}";
-        await _channel.QueueDeclareAsync(queueName, durable: false, exclusive: false, autoDelete: true, cancellationToken: stoppingToken);
+        await _channel.QueueDeclareAsync(queueName, durable: false, exclusive: true, autoDelete: true, cancellationToken: stoppingToken);
         await _channel.QueueBindAsync(queueName, _options.OrdersExchange, string.Empty,
             cancellationToken: stoppingToken);
 

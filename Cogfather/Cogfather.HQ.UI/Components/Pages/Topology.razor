@@ -3,6 +3,7 @@
 @rendermode InteractiveServer
 @inject ISender Sender
 @inject Cogfather.HQ.Infrastructure.Services.SystemLogService LogService
+@inject Cogfather.HQ.UI.Services.ConsensusEventService ConsensusEvents
 @implements IDisposable
 
 <PageTitle>Topology — Cogfather HQ</PageTitle>
@@ -102,6 +103,17 @@ else
         }, null, TimeSpan.FromSeconds(5), TimeSpan.FromSeconds(5));
 
         LogService.OnLogEntry += HandleLogEntry;
+        ConsensusEvents.OnConsensusReached += HandleConsensus;
+    }
+
+    private async void HandleConsensus(ConsensusResult _)
+    {
+        try
+        {
+            await Refresh();
+            await InvokeAsync(StateHasChanged);
+        }
+        catch (ObjectDisposedException) { }
     }
 
     private async void HandleLogEntry(Cogfather.HQ.Infrastructure.Services.SystemLogEntry entry)
@@ -148,5 +160,6 @@ else
     {
         _refreshTimer?.Dispose();
         LogService.OnLogEntry -= HandleLogEntry;
+        ConsensusEvents.OnConsensusReached -= HandleConsensus;
     }
 }

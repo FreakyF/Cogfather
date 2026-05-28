@@ -36,7 +36,7 @@ public class RabbitMqLogConsumerService : BackgroundService
 
         await _channel.ExchangeDeclareAsync(_options.LogsExchange, ExchangeType.Fanout, true,
             cancellationToken: stoppingToken);
-        await _channel.QueueDeclareAsync(_options.LogsQueue, false, false, true, cancellationToken: stoppingToken);
+        await _channel.QueueDeclareAsync(_options.LogsQueue, false, exclusive: true, true, cancellationToken: stoppingToken);
         await _channel.QueueBindAsync(_options.LogsQueue, _options.LogsExchange, string.Empty,
             cancellationToken: stoppingToken);
 

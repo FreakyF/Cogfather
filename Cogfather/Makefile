@@ -1,4 +1,4 @@
-.PHONY: build run ui worker workers stop clean
+.PHONY: build run ui worker workers stop clean rabbit rabbit-stop
 
 SLN := Cogfather.sln
 HQ  := Cogfather.HQ.UI
@@ -39,6 +39,16 @@ stop:
 	else \
 		echo "No worker PIDs on record."; \
 	fi
+
+rabbit:
+	docker run -d --name cogfather-rabbitmq \
+		-p 5672:5672 -p 15672:15672 \
+		-e RABBITMQ_DEFAULT_USER=guest \
+		-e RABBITMQ_DEFAULT_PASS=guest \
+		rabbitmq:4-management-alpine
+
+rabbit-stop:
+	docker rm -f cogfather-rabbitmq
 
 clean:
 	dotnet clean $(SLN)
