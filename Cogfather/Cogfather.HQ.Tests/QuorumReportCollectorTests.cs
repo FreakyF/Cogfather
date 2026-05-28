@@ -66,7 +66,7 @@ public class QuorumReportCollectorTests
     [InlineData(1, 1, true)]
     [InlineData(2, 1, false)]
     [InlineData(2, 2, true)]
-    [InlineData(3, 2, false)]
+    [InlineData(3, 2, true)]   // 2 of 3: ceil(2*3/3)=2 reports sufficient (SilentFailure tolerance)
     [InlineData(3, 3, true)]
     [InlineData(4, 2, false)]
     [InlineData(4, 3, true)]

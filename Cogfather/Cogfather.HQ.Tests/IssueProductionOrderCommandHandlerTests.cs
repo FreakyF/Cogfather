@@ -171,6 +171,44 @@ public class IssueProductionOrderCommandHandlerTests
     }
 
     [Fact]
+    public async Task Handle_DiamondDependency_AccumulatesAmountsForSharedSubComponent()
+    {
+        // gadget needs part-a (×1) and part-b (×1)
+        // part-a needs shared-component (×2)
+        // part-b needs shared-component (×1)
+        // → shared-component sub-order must be for 3 total, not 2 (bug: second branch skipped)
+        var sharedRecipe = new Recipe("shared-component", 1.0, [], [new Product("shared-component", 1)]);
+        var partA = new Recipe("part-a", 1.0,
+            [new Ingredient("shared-component", 2)],
+            [new Product("part-a", 1)]);
+        var partB = new Recipe("part-b", 1.0,
+            [new Ingredient("shared-component", 1)],
+            [new Product("part-b", 1)]);
+        var gadget = new Recipe("gadget", 1.0,
+            [new Ingredient("part-a", 1), new Ingredient("part-b", 1)],
+            [new Product("gadget", 1)]);
+
+        var catalog = new MockCatalog();
+        catalog.Recipes["gadget"] = gadget;
+        catalog.Recipes["part-a"] = partA;
+        catalog.Recipes["part-b"] = partB;
+        catalog.Recipes["shared-component"] = sharedRecipe;
+
+        var repo = new MockOrderRepository();
+        var dispatcher = new MockOrderDispatcher();
+        var inventoryRepo = new MockInventoryRepository();
+        var handler = new IssueProductionOrderCommandHandler(catalog, repo, inventoryRepo, dispatcher,
+            Microsoft.Extensions.Logging.Abstractions.NullLogger<IssueProductionOrderCommandHandler>.Instance);
+
+        await handler.Handle(new IssueProductionOrderCommand("gadget", 1), CancellationToken.None);
+
+        // Expect 4 orders: shared-component, part-a, part-b, gadget
+        Assert.Equal(4, repo.Orders.Count);
+        var sharedOrder = repo.Orders.Single(o => o.RecipeId == "shared-component");
+        Assert.Equal(3, sharedOrder.TargetAmount); // 2 from part-a + 1 from part-b
+    }
+
+    [Fact]
     public async Task Handle_IngredientAlreadyInInventory_ConsumesInventoryBeforeIssuingSubOrder()
     {
         var cableRecipe = new Recipe("copper-cable", 1.0,
