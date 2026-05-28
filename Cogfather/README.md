@@ -63,36 +63,6 @@ dotnet test --collect:"XPlat Code Coverage" --results-directory coverage
 
 Current coverage: **HQ.Application 96.7% · HQ.Domain 95.6% · Node.Application 80% · Node.Domain 85%**
 
-## Kubernetes Deployment
-
-### Prerequisites
-- `kubectl` connected to a cluster (minikube, k3s, etc.)
-- Docker images built locally
-
-```bash
-# Build images
-docker build -t cogfather-hq:latest -f Cogfather.HQ.UI/Dockerfile .
-docker build -t cogfather-node:latest -f Cogfather.Node.Worker/Dockerfile .
-
-# For minikube — load images into cluster
-minikube image load cogfather-hq:latest
-minikube image load cogfather-node:latest
-
-# Deploy
-kubectl apply -f k8s/namespace.yaml
-kubectl apply -f k8s/rabbitmq.yaml
-kubectl apply -f k8s/recipes-configmap.yaml
-kubectl apply -f k8s/hq-deployment.yaml
-kubectl apply -f k8s/node-alpha.yaml
-kubectl apply -f k8s/node-beta.yaml
-kubectl apply -f k8s/node-gamma.yaml
-
-# Wait for rollout
-kubectl rollout status deployment/cogfather-hq -n cogfather
-
-# Access HQ at http://localhost:30080  (NodePort)
-```
-
 ## Configuration Reference
 
 | Variable | Service | Description |
@@ -137,6 +107,5 @@ Cogfather/
 ├── Cogfather.Node.Worker/        # Worker host entry point
 ├── Cogfather.HQ.Tests/           # xUnit tests for HQ layers
 ├── Cogfather.Node.Tests/         # xUnit tests for Node layers
-├── k8s/                          # Kubernetes manifests
 └── docker-compose.yml            # Full-stack local deployment
 ```
