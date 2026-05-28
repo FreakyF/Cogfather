@@ -46,6 +46,26 @@ builder.Services.ConfigureApplicationCookie(options =>
     options.SlidingExpiration = true;
 });
 
+builder.Services.AddCors(options =>
+{
+    options.AddPolicy("HqApiPolicy", policy =>
+    {
+        var origins = builder.Configuration
+            .GetSection("AllowedCorsOrigins")
+            .Get<string[]>() ?? [];
+
+        if (origins.Length > 0)
+            policy.WithOrigins(origins)
+                  .AllowAnyHeader()
+                  .AllowAnyMethod()
+                  .AllowCredentials();
+        else
+            policy.AllowAnyOrigin()
+                  .AllowAnyHeader()
+                  .AllowAnyMethod();
+    });
+});
+
 var app = builder.Build();
 
 using (var scope = app.Services.CreateScope())
@@ -81,6 +101,7 @@ app.Use(async (context, next) =>
     await next();
 });
 
+app.UseCors("HqApiPolicy");
 app.UseAuthentication();
 app.UseAuthorization();
 app.UseAntiforgery();
