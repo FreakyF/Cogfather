@@ -33,12 +33,15 @@ services:
       RabbitMq__Username: guest
       RabbitMq__Password: guest
       RecipeBook__FilePath: /app/recipes.json
+      Serilog__WriteTo__2__Args__uri: http://loki:3100
     volumes:
       - hq-data:/data
       - ./recipes.json:/app/recipes.json:ro
     depends_on:
       rabbitmq:
         condition: service_healthy
+      loki:
+        condition: service_started
 
   node-alpha:
     build:
@@ -53,9 +56,12 @@ services:
       RabbitMq__Username: guest
       RabbitMq__Password: guest
       Fault__ActiveFault: 0
+      Serilog__WriteTo__2__Args__uri: http://loki:3100
     depends_on:
       rabbitmq:
         condition: service_healthy
+      loki:
+        condition: service_started
 
   node-beta:
     build:
@@ -70,9 +76,12 @@ services:
       RabbitMq__Username: guest
       RabbitMq__Password: guest
       Fault__ActiveFault: 0
+      Serilog__WriteTo__2__Args__uri: http://loki:3100
     depends_on:
       rabbitmq:
         condition: service_healthy
+      loki:
+        condition: service_started
 
   node-gamma:
     build:
@@ -87,10 +96,57 @@ services:
       RabbitMq__Username: guest
       RabbitMq__Password: guest
       Fault__ActiveFault: 0
+      Serilog__WriteTo__2__Args__uri: http://loki:3100
     depends_on:
       rabbitmq:
         condition: service_healthy
+      loki:
+        condition: service_started
+
+  prometheus:
+    image: prom/prometheus:latest
+    container_name: cogfather-prometheus
+    ports:
+      - "9090:9090"
+    volumes:
+      - ./prometheus/prometheus.yml:/etc/prometheus/prometheus.yml:ro
+      - prometheus-data:/prometheus
+    command:
+      - '--config.file=/etc/prometheus/prometheus.yml'
+      - '--storage.tsdb.path=/prometheus'
+      - '--web.enable-lifecycle'
+    depends_on:
+      - hq
+
+  loki:
+    image: grafana/loki:latest
+    container_name: cogfather-loki
+    ports:
+      - "3100:3100"
+    volumes:
+      - ./loki/loki.yml:/etc/loki/local-config.yaml:ro
+      - loki-data:/loki
+    command: -config.file=/etc/loki/local-config.yaml
+
+  grafana:
+    image: grafana/grafana:latest
+    container_name: cogfather-grafana
+    ports:
+      - "3000:3000"
+    environment:
+      GF_SECURITY_ADMIN_USER: admin
+      GF_SECURITY_ADMIN_PASSWORD: admin
+      GF_USERS_ALLOW_SIGN_UP: "false"
+    volumes:
+      - ./grafana/provisioning:/etc/grafana/provisioning:ro
+      - grafana-data:/var/lib/grafana
+    depends_on:
+      - prometheus
+      - loki
 
 volumes:
   rabbit-data:
   hq-data:
+  prometheus-data:
+  loki-data:
+  grafana-data:

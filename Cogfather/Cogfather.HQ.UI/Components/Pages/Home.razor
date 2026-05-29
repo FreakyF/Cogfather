@@ -72,7 +72,7 @@
                         {
                             var oid = order.Id;
                             <tr style="cursor:pointer" @onclick="() => GoToOrder(oid)">
-                                <td class="font-monospace small">@order.RecipeId</td>
+                                <td class="small">@DisplayHelper.FormatId(order.RecipeId)</td>
                                 <td>@order.TargetAmount</td>
                                 <td>
                                     <span class="badge @StatusBadge(order.Status)">@order.Status</span>
@@ -123,7 +123,7 @@
                         @foreach (var item in _inventoryItems.OrderByDescending(i => i.Value).Take(5))
                         {
                             <li class="list-group-item d-flex justify-content-between py-1 px-3">
-                                <span class="small font-monospace">@item.Key</span>
+                                <span class="small">@DisplayHelper.FormatId(item.Key)</span>
                                 <span class="badge bg-secondary">@item.Value</span>
                             </li>
                         }
@@ -144,7 +144,7 @@
                 {
                     <li class="list-group-item py-1 px-3 small">
                         <span class="text-muted me-2">@ev.Time.ToString("HH:mm:ss")</span>
-                        <span class="font-monospace me-2">@ev.RecipeId</span>
+                        <span class="me-2">@DisplayHelper.FormatId(ev.RecipeId)</span>
                         <VerdictBadge Verdict="ev.Verdict"/>
                         <span class="text-muted ms-2">acc: @ev.Accuracy.ToString("P0")</span>
                     </li>

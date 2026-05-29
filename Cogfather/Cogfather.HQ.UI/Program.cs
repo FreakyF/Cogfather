@@ -11,6 +11,7 @@ using Microsoft.AspNetCore.Diagnostics.HealthChecks;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Cogfather.HQ.Infrastructure.Serilog;
+using Prometheus;
 using Serilog;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -89,6 +90,8 @@ if (!app.Environment.IsDevelopment())
     app.UseHsts();
 }
 
+app.UseHttpMetrics();
+
 app.UseStatusCodePagesWithReExecute("/not-found", createScopeForStatusCodePages: true);
 app.UseHttpsRedirection();
 
@@ -107,6 +110,7 @@ app.UseAuthorization();
 app.UseAntiforgery();
 
 app.MapHub<ConsensusHub>("/hubs/consensus");
+app.MapMetrics().AllowAnonymous();
 
 app.MapHealthChecks("/api/v1/health", new HealthCheckOptions
 {

@@ -1,4 +1,5 @@
 using Cogfather.HQ.Application.Interfaces;
+using Cogfather.HQ.Application.Metrics;
 using Cogfather.HQ.Application.Services;
 using Cogfather.HQ.Domain.Entities;
 using Cogfather.HQ.Domain.Enums;
@@ -61,6 +62,7 @@ public class ReceiveProductionReportCommandHandler : IRequestHandler<ReceiveProd
 
         _logger.LogInformation("Consensus for {RecipeId}: {Verdict} (accuracy={Accuracy:P0})",
             request.RecipeId, result.Verdict, result.Accuracy);
+        CogfatherMetrics.ConsensusResults.WithLabels(request.RecipeId, result.Verdict.ToString()).Inc();
 
         foreach (var byzantineNodeId in result.ByzantineNodeIds)
         {
@@ -69,8 +71,11 @@ public class ReceiveProductionReportCommandHandler : IRequestHandler<ReceiveProd
             {
                 node.RecordByzantineFault();
                 await _nodeRepository.UpdateAsync(node, cancellationToken);
+                var shortId = byzantineNodeId[..Math.Min(8, byzantineNodeId.Length)];
+                CogfatherMetrics.ByzantineFaults.WithLabels(shortId).Inc();
+                CogfatherMetrics.NodeReputation.WithLabels(shortId, node.Address).Set(node.ReputationScore);
                 _logger.LogWarning("Byzantine fault recorded for node {NodeId}: reputation={Score}, faults={Count}",
-                    byzantineNodeId[..Math.Min(8, byzantineNodeId.Length)], node.ReputationScore, node.ByzantineFaultCount);
+                    shortId, node.ReputationScore, node.ByzantineFaultCount);
             }
         }
 

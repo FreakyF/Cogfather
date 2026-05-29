@@ -1,4 +1,5 @@
 using Cogfather.HQ.Application.Interfaces;
+using Cogfather.HQ.Application.Metrics;
 using Cogfather.HQ.Domain.Entities;
 using Cogfather.HQ.Infrastructure.Data;
 using Cogfather.HQ.Infrastructure.Services;
@@ -35,6 +36,8 @@ public class InventoryRepository : IInventoryRepository
         await using var db = await _factory.CreateDbContextAsync(cancellationToken);
         db.Inventories.Update(inventory);
         await db.SaveChangesAsync(cancellationToken);
+        foreach (var (item, qty) in inventory.Items)
+            CogfatherMetrics.InventoryQuantity.WithLabels(item).Set(qty);
     }
 
     public async Task AddItemAsync(string componentId, double amount, CancellationToken cancellationToken = default)
@@ -52,6 +55,7 @@ public class InventoryRepository : IInventoryRepository
             inventory.Add(componentId, amount);
             db.Inventories.Update(inventory);
             await db.SaveChangesAsync(cancellationToken);
+            CogfatherMetrics.InventoryQuantity.WithLabels(componentId).Set(inventory.Items.GetValueOrDefault(componentId));
         }
         finally
         {

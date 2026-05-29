@@ -3,6 +3,7 @@ using System.Text.Json;
 using Cogfather.Contracts;
 using Cogfather.Contracts.Messages.Heartbeat;
 using Cogfather.HQ.Application.Commands.RegisterNode;
+using Cogfather.HQ.Application.Metrics;
 using MediatR;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
@@ -50,14 +51,14 @@ public class HeartbeatConsumerService : BackgroundService
                 var heartbeat = JsonSerializer.Deserialize(messageString, CogfatherJsonContext.Default.NodeHeartbeatMessage);
                 if (heartbeat != null)
                 {
+                    var nodeId = heartbeat.NodeId.ToString();
+                    var shortId = nodeId[..Math.Min(8, nodeId.Length)];
+                    CogfatherMetrics.NodeHeartbeats.WithLabels(shortId, heartbeat.DisplayName).Inc();
+
                     using var scope = _serviceScopeFactory.CreateScope();
                     var mediator = scope.ServiceProvider.GetRequiredService<IMediator>();
 
-                    var command = new RegisterNodeCommand(
-                        heartbeat.NodeId.ToString(),
-                        heartbeat.DisplayName
-                    );
-
+                    var command = new RegisterNodeCommand(nodeId, heartbeat.DisplayName);
                     await mediator.Send(command, stoppingToken);
                 }
 

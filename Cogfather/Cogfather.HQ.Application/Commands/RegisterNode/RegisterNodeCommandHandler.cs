@@ -1,4 +1,5 @@
 using Cogfather.HQ.Application.Interfaces;
+using Cogfather.HQ.Application.Metrics;
 using Cogfather.HQ.Domain.Entities;
 using MediatR;
 using Microsoft.Extensions.Logging;
@@ -27,6 +28,7 @@ public class RegisterNodeCommandHandler : IRequestHandler<RegisterNodeCommand>
 
         var node = new NodeRegistration(request.NodeId, request.Address);
         await _nodeRepository.AddAsync(node, cancellationToken);
+        CogfatherMetrics.NodeReputation.WithLabels(request.NodeId[..Math.Min(8, request.NodeId.Length)], request.Address).Set(node.ReputationScore);
         _logger.LogInformation("Node registered: {NodeId} at {Address}", request.NodeId[..Math.Min(8, request.NodeId.Length)], request.Address);
     }
 }

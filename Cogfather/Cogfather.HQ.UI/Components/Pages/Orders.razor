@@ -56,7 +56,7 @@
                 {
                     <tr>
                         <td class="font-monospace small text-muted">@order.Id.ToString()[..8]…</td>
-                        <td class="font-monospace">@order.RecipeId</td>
+                        <td>@DisplayHelper.FormatId(order.RecipeId)</td>
                         <td>@order.TargetAmount</td>
                         <td>
                             <span class="badge @StatusBadge(order.Status)">@order.Status</span>
@@ -116,7 +116,7 @@
                             <option value="">— select recipe —</option>
                             @foreach (var r in _recipes)
                             {
-                                <option value="@r.Id">@r.Id</option>
+                                <option value="@r.Id">@DisplayHelper.FormatId(r.Id)</option>
                             }
                         </select>
                     </div>

@@ -16,6 +16,7 @@
         <PackageReference Include="JetBrains.Annotations" Version="2025.2.4"/>
         <PackageReference Include="MediatR" Version="12.*"/>
         <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="10.*"/>
+        <PackageReference Include="prometheus-net" Version="8.*"/>
     </ItemGroup>
 
 </Project>

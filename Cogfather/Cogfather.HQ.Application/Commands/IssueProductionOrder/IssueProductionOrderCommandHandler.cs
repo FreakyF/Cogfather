@@ -1,4 +1,5 @@
 using Cogfather.HQ.Application.Interfaces;
+using Cogfather.HQ.Application.Metrics;
 using Cogfather.HQ.Domain.Entities;
 using Cogfather.HQ.Domain.Exceptions;
 using Cogfather.HQ.Domain.ValueObjects;
@@ -35,6 +36,7 @@ public class IssueProductionOrderCommandHandler : IRequestHandler<IssueProductio
                      ?? throw new RecipeNotFoundException(request.RecipeId);
 
         _logger.LogInformation("Issuing order: {RecipeId} × {Amount}", request.RecipeId, request.TargetAmount);
+        CogfatherMetrics.OrdersIssued.WithLabels(request.RecipeId).Inc();
 
         var inventory = await _inventoryRepository.GetAsync(cancellationToken);
 
