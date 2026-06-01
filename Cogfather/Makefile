@@ -1,4 +1,4 @@
-.PHONY: build run ui worker workers stop clean rabbit rabbit-stop
+.PHONY: build run run-local ui worker workers stop down down-clean clean rabbit rabbit-stop
 
 SLN := Cogfather.sln
 HQ  := Cogfather.HQ.UI
@@ -22,7 +22,12 @@ workers: build
 	done
 	@echo "$(N) workers started in background. Logs: ./logs/worker-N.log"
 
-run: build
+# Pełny stack w Dockerze: HQ, nody, RabbitMQ, Prometheus, Loki, Grafana
+run:
+	docker compose up --build
+
+# Lokalny tryb deweloperski bez Dockera (dotnet + lokalne workery)
+run-local: build
 	@mkdir -p logs
 	@if [ -f .worker-pids ]; then xargs kill 2>/dev/null < .worker-pids || true; rm -f .worker-pids; fi
 	@for i in $$(seq 1 $(N)); do \
@@ -39,6 +44,14 @@ stop:
 	else \
 		echo "No worker PIDs on record."; \
 	fi
+
+# Zatrzymaj Docker stack
+down:
+	docker compose down
+
+# Zatrzymaj Docker stack i usuń volumes (czysta baza)
+down-clean:
+	docker compose down -v
 
 rabbit:
 	docker run -d --name cogfather-rabbitmq \

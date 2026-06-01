@@ -21,18 +21,19 @@ services:
       context: .
       dockerfile: Cogfather.HQ.UI/Dockerfile
     container_name: cogfather-hq
+    user: root
     ports:
       - "8080:8080"
     environment:
       ASPNETCORE_ENVIRONMENT: Production
       ASPNETCORE_URLS: http://+:8080
-      ConnectionStrings__HqDb: "Data Source=/data/cogfather-hq.db"
-      ConnectionStrings__AuthDb: "Data Source=/data/cogfather-auth.db"
-      RabbitMq__Host: rabbitmq
-      RabbitMq__Port: 5672
-      RabbitMq__Username: guest
-      RabbitMq__Password: guest
-      RecipeBook__FilePath: /app/recipes.json
+      ConnectionStrings__DefaultConnection: "Data Source=/data/cogfather-hq.db"
+      ConnectionStrings__AuthConnection: "Data Source=/data/cogfather-auth.db"
+      RabbitMQ__HostName: rabbitmq
+      RabbitMQ__Port: 5672
+      RabbitMQ__UserName: guest
+      RabbitMQ__Password: guest
+      Catalog__RecipesFilePath: /app/recipes.json
       Serilog__WriteTo__2__Args__uri: http://loki:3100
     volumes:
       - hq-data:/data
