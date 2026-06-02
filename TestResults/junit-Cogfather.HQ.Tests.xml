@@ -1,0 +1,99 @@
+<testsuites>
+  <testsuite name="Cogfather.HQ.Tests.dll" tests="85" skipped="0" failures="0" errors="0" time="0.3546548" timestamp="2026-05-28T20:48:49" hostname="legion-arch" id="0" package="Cogfather.HQ.Tests.dll">
+    <properties />
+    <testcase classname="Cogfather.HQ.Tests.ConsensusEngineTests" name="EvaluateAsync_NoReports_ReturnsInconclusive" time="0.0144312" />
+    <testcase classname="Cogfather.HQ.Tests.ClearNodeFaultCommandHandlerTests" name="Handle_NodeExists_ClearsFaultMode" time="0.0146912" />
+    <testcase classname="Cogfather.HQ.Tests.SetNodeFaultCommandHandlerTests" name="Handle_NodeNotFound_ThrowsInvalidOperationException" time="0.0118143" />
+    <testcase classname="Cogfather.HQ.Tests.HqInventoryTests" name="Remove_SufficientInventory_DecrementsAmount" time="0.0143399" />
+    <testcase classname="Cogfather.HQ.Tests.QueryHandlerTests" name="GetReportsByCorrelationIdQueryHandler_ReturnsMatchingReports" time="0.0146365" />
+    <testcase classname="Cogfather.HQ.Tests.NodeRegistrationTests" name="UpdateStatus_ChangesStatus" time="0.0123611" />
+    <testcase classname="Cogfather.HQ.Tests.ProductionOrderTests" name="CompleteProduction_FromNonInProgressStatus_ThrowsInvalidOperationException(initialStatus: Failed)" time="0.0081778" />
+    <testcase classname="Cogfather.HQ.Tests.NodeRegistrationTests" name="SetFaultMode_ChangesFaultMode" time="0.0001966" />
+    <testcase classname="Cogfather.HQ.Tests.ProductionOrderTests" name="CompleteProduction_FromNonInProgressStatus_ThrowsInvalidOperationException(initialStatus: Cancelled)" time="0.0009351" />
+    <testcase classname="Cogfather.HQ.Tests.NodeRegistrationTests" name="Constructor_InitializesPropertiesCorrectly" time="0.0004180" />
+    <testcase classname="Cogfather.HQ.Tests.HqInventoryTests" name="Add_NewComponent_AddsToInventory" time="0.0007733" />
+    <testcase classname="Cogfather.HQ.Tests.ProductionOrderTests" name="CompleteProduction_FromNonInProgressStatus_ThrowsInvalidOperationException(initialStatus: Pending)" time="0.0003243" />
+    <testcase classname="Cogfather.HQ.Tests.ProductionOrderTests" name="CompleteProduction_FromNonInProgressStatus_ThrowsInvalidOperationException(initialStatus: Completed)" time="0.0000321" />
+    <testcase classname="Cogfather.HQ.Tests.ClearNodeFaultCommandHandlerTests" name="Handle_NodeNotFound_ThrowsInvalidOperationException" time="0.0010874" />
+    <testcase classname="Cogfather.HQ.Tests.HqInventoryTests" name="Add_ExistingComponent_IncrementsAmount" time="0.0002126" />
+    <testcase classname="Cogfather.HQ.Tests.HqInventoryTests" name="Add_NegativeAmount_ThrowsArgumentException" time="0.0004534" />
+    <testcase classname="Cogfather.HQ.Tests.QueryHandlerTests" name="GetReportsByRecipeIdQueryHandler_ReturnsMatchingReports" time="0.0021191" />
+    <testcase classname="Cogfather.HQ.Tests.ConsensusEngineTests" name="EvaluateAsync_WithReports_ReturnsExpectedVerdict(total: 4, successCount: 3, expectedVerdict: Approved, expectedAccuracy: 0.75)" time="0.0028364" />
+    <testcase classname="Cogfather.HQ.Tests.QuorumReportCollectorTests" name="HasQuorumAsync_WithActiveNodes_ReturnsExpectedResult(activeNodesCount: 7, reportCount: 5, expectedResult: True)" time="0.0193565" />
+    <testcase classname="Cogfather.HQ.Tests.ConsensusEngineTests" name="EvaluateAsync_WithReports_ReturnsExpectedVerdict(total: 1, successCount: 1, expectedVerdict: Approved, expectedAccuracy: 1)" time="0.0004311" />
+    <testcase classname="Cogfather.HQ.Tests.HqInventoryTests" name="Remove_NonExistentComponent_ThrowsInsufficientInventoryException" time="0.0015086" />
+    <testcase classname="Cogfather.HQ.Tests.ConsensusEngineTests" name="EvaluateAsync_WithReports_ReturnsExpectedVerdict(total: 4, successCount: 2, expectedVerdict: Inconclusive, expectedAccuracy: 0.5)" time="0.0000358" />
+    <testcase classname="Cogfather.HQ.Tests.ConsensusEngineTests" name="EvaluateAsync_WithReports_ReturnsExpectedVerdict(total: 3, successCount: 3, expectedVerdict: Approved, expectedAccuracy: 1)" time="0.0000277" />
+    <testcase classname="Cogfather.HQ.Tests.ConsensusEngineTests" name="EvaluateAsync_WithReports_ReturnsExpectedVerdict(total: 3, successCount: 0, expectedVerdict: Rejected, expectedAccuracy: 1)" time="0.0002869" />
+    <testcase classname="Cogfather.HQ.Tests.ProductionReportTests" name="Constructor_InitializesPropertiesCorrectly" time="0.0200002" />
+    <testcase classname="Cogfather.HQ.Tests.QuorumReportCollectorTests" name="HasQuorumAsync_WithActiveNodes_ReturnsExpectedResult(activeNodesCount: 1, reportCount: 1, expectedResult: True)" time="0.0005791" />
+    <testcase classname="Cogfather.HQ.Tests.HqInventoryTests" name="Remove_NegativeAmount_ThrowsArgumentException" time="0.0004804" />
+    <testcase classname="Cogfather.HQ.Tests.QuorumReportCollectorTests" name="HasQuorumAsync_WithActiveNodes_ReturnsExpectedResult(activeNodesCount: 4, reportCount: 2, expectedResult: False)" time="0.0000362" />
+    <testcase classname="Cogfather.HQ.Tests.ConsensusEngineTests" name="EvaluateAsync_WithReports_ReturnsExpectedVerdict(total: 10, successCount: 7, expectedVerdict: Approved, expectedAccuracy: 0.69999999999999996)" time="0.0000699" />
+    <testcase classname="Cogfather.HQ.Tests.QuorumReportCollectorTests" name="HasQuorumAsync_WithActiveNodes_ReturnsExpectedResult(activeNodesCount: 2, reportCount: 1, expectedResult: False)" time="0.0000251" />
+    <testcase classname="Cogfather.HQ.Tests.ConsensusEngineTests" name="EvaluateAsync_WithReports_ReturnsExpectedVerdict(total: 3, successCount: 2, expectedVerdict: Approved, expectedAccuracy: 0.66666666666666663)" time="0.0000352" />
+    <testcase classname="Cogfather.HQ.Tests.QuorumReportCollectorTests" name="HasQuorumAsync_WithActiveNodes_ReturnsExpectedResult(activeNodesCount: 2, reportCount: 2, expectedResult: True)" time="0.0000227" />
+    <testcase classname="Cogfather.HQ.Tests.QuorumReportCollectorTests" name="HasQuorumAsync_WithActiveNodes_ReturnsExpectedResult(activeNodesCount: 7, reportCount: 4, expectedResult: False)" time="0.0000346" />
+    <testcase classname="Cogfather.HQ.Tests.RegisterNodeCommandHandlerTests" name="Handle_ExistingNode_DoesNotAdd" time="0.0201749" />
+    <testcase classname="Cogfather.HQ.Tests.ConsensusEngineTests" name="EvaluateAsync_WithReports_ReturnsExpectedVerdict(total: 4, successCount: 1, expectedVerdict: Rejected, expectedAccuracy: 0.75)" time="0.0001147" />
+    <testcase classname="Cogfather.HQ.Tests.QuorumReportCollectorTests" name="HasQuorumAsync_WithActiveNodes_ReturnsExpectedResult(activeNodesCount: 4, reportCount: 3, expectedResult: True)" time="0.0000344" />
+    <testcase classname="Cogfather.HQ.Tests.ConsensusEngineTests" name="EvaluateAsync_WithReports_ReturnsExpectedVerdict(total: 10, successCount: 6, expectedVerdict: Inconclusive, expectedAccuracy: 0.59999999999999998)" time="0.0000621" />
+    <testcase classname="Cogfather.HQ.Tests.QuorumReportCollectorTests" name="HasQuorumAsync_WithActiveNodes_ReturnsExpectedResult(activeNodesCount: 10, reportCount: 6, expectedResult: False)" time="0.0000513" />
+    <testcase classname="Cogfather.HQ.Tests.HqInventoryTests" name="Remove_InsufficientInventory_ThrowsInsufficientInventoryException" time="0.0003045" />
+    <testcase classname="Cogfather.HQ.Tests.QuorumReportCollectorTests" name="HasQuorumAsync_WithActiveNodes_ReturnsExpectedResult(activeNodesCount: 10, reportCount: 7, expectedResult: True)" time="0.0000562" />
+    <testcase classname="Cogfather.HQ.Tests.QuorumReportCollectorTests" name="HasQuorumAsync_WithActiveNodes_ReturnsExpectedResult(activeNodesCount: 3, reportCount: 3, expectedResult: True)" time="0.0000329" />
+    <testcase classname="Cogfather.HQ.Tests.QuorumReportCollectorTests" name="HasQuorumAsync_WithActiveNodes_ReturnsExpectedResult(activeNodesCount: 1, reportCount: 0, expectedResult: False)" time="0.0000626" />
+    <testcase classname="Cogfather.HQ.Tests.SetNodeFaultCommandHandlerTests" name="Handle_NodeExists_UpdatesFaultMode" time="0.0042969" />
+    <testcase classname="Cogfather.HQ.Tests.QuorumReportCollectorTests" name="HasQuorumAsync_WithActiveNodes_ReturnsExpectedResult(activeNodesCount: 3, reportCount: 2, expectedResult: True)" time="0.0000320" />
+    <testcase classname="Cogfather.HQ.Tests.RegisterNodeCommandHandlerTests" name="Handle_NewNode_AddsToRepository" time="0.0009458" />
+    <testcase classname="Cogfather.HQ.Tests.QueryHandlerTests" name="GetOrderByIdQueryHandler_ReturnsOrder" time="0.0027467" />
+    <testcase classname="Cogfather.HQ.Tests.ProductionOrderTests" name="CompleteProduction_FromInProgress_ChangesStatusToCompleted" time="0.0041465" />
+    <testcase classname="Cogfather.HQ.Tests.ProductionOrderTests" name="StartProduction_FromNonPendingStatus_ThrowsInvalidOperationException(initialStatus: Completed)" time="0.0003939" />
+    <testcase classname="Cogfather.HQ.Tests.ProductionOrderTests" name="StartProduction_FromNonPendingStatus_ThrowsInvalidOperationException(initialStatus: InProgress)" time="0.0002534" />
+    <testcase classname="Cogfather.HQ.Tests.ProductionOrderTests" name="StartProduction_FromNonPendingStatus_ThrowsInvalidOperationException(initialStatus: Failed)" time="0.0000245" />
+    <testcase classname="Cogfather.HQ.Tests.ProductionOrderTests" name="StartProduction_FromNonPendingStatus_ThrowsInvalidOperationException(initialStatus: Cancelled)" time="0.0000237" />
+    <testcase classname="Cogfather.HQ.Tests.QuorumReportCollectorTests" name="HasQuorumAsync_NoActiveNodes_ReturnsTrue" time="0.0019550" />
+    <testcase classname="Cogfather.HQ.Tests.ProductionOrderTests" name="Constructor_InitializesPropertiesCorrectly" time="0.0005802" />
+    <testcase classname="Cogfather.HQ.Tests.ProductionOrderTests" name="FailProduction_ChangesStatusToFailed(initialStatus: InProgress)" time="0.0002567" />
+    <testcase classname="Cogfather.HQ.Tests.ProductionOrderTests" name="FailProduction_ChangesStatusToFailed(initialStatus: Cancelled)" time="0.0002436" />
+    <testcase classname="Cogfather.HQ.Tests.ProductionOrderTests" name="FailProduction_ChangesStatusToFailed(initialStatus: Pending)" time="0.0000119" />
+    <testcase classname="Cogfather.HQ.Tests.ProductionOrderTests" name="FailProduction_ChangesStatusToFailed(initialStatus: Failed)" time="0.0000093" />
+    <testcase classname="Cogfather.HQ.Tests.ProductionOrderTests" name="FailProduction_ChangesStatusToFailed(initialStatus: Completed)" time="0.0000083" />
+    <testcase classname="Cogfather.HQ.Tests.ProductionOrderTests" name="CancelProduction_FromCancellableStatus_ChangesStatusToCancelled(initialStatus: Pending)" time="0.0003167" />
+    <testcase classname="Cogfather.HQ.Tests.ProductionOrderTests" name="CancelProduction_FromCancellableStatus_ChangesStatusToCancelled(initialStatus: InProgress)" time="0.0002641" />
+    <testcase classname="Cogfather.HQ.Tests.ConsensusEngineTests" name="EvaluateAsync_Approved_ByzantineIdsAreFailingNodes" time="0.0040952" />
+    <testcase classname="Cogfather.HQ.Tests.ProductionOrderTests" name="CancelProduction_FromNonCancellableStatus_ThrowsInvalidOperationException(initialStatus: Failed)" time="0.0003517" />
+    <testcase classname="Cogfather.HQ.Tests.ProductionOrderTests" name="CancelProduction_FromNonCancellableStatus_ThrowsInvalidOperationException(initialStatus: Completed)" time="0.0002071" />
+    <testcase classname="Cogfather.HQ.Tests.ProductionOrderTests" name="StartProduction_FromPending_ChangesStatusToInProgress" time="0.0001512" />
+    <testcase classname="Cogfather.HQ.Tests.ConsensusEngineTests" name="EvaluateAsync_Rejected_ByzantineIdsAreSucceedingNodes" time="0.0007914" />
+    <testcase classname="Cogfather.HQ.Tests.ConsensusEngineTests" name="EvaluateAsync_Inconclusive_NoByzantineIds" time="0.0020182" />
+    <testcase classname="Cogfather.HQ.Tests.QueryHandlerTests" name="GetInventoryQueryHandler_ReturnsInventory" time="0.0064092" />
+    <testcase classname="Cogfather.HQ.Tests.ReceiveProductionReportCommandHandlerTests" name="Handle_WhenByzantineNodeDetected_RecordsFaultOnNode" time="0.0282603" />
+    <testcase classname="Cogfather.HQ.Tests.QueryHandlerTests" name="GetOrdersQueryHandler_ReturnsAllOrders" time="0.0011209" />
+    <testcase classname="Cogfather.HQ.Tests.ReceiveProductionReportCommandHandlerTests" name="Handle_AddsReportAndProceedsToConsensusWhenQuorumMet" time="0.0012548" />
+    <testcase classname="Cogfather.HQ.Tests.QueryHandlerTests" name="GetAllNodesQueryHandler_ReturnsAllNodes" time="0.0012473" />
+    <testcase classname="Cogfather.HQ.Tests.IssueProductionOrderCommandHandlerTests" name="Handle_RecipeWithIngredients_IssuesSubOrders" time="0.0303846" />
+    <testcase classname="Cogfather.HQ.Tests.ReceiveProductionReportCommandHandlerTests" name="Handle_WhenConsensusRejected_FailsOrder" time="0.0015680" />
+    <testcase classname="Cogfather.HQ.Tests.IssueProductionOrderCommandHandlerTests" name="Handle_DiamondDependency_AccumulatesAmountsForSharedSubComponent" time="0.0019748" />
+    <testcase classname="Cogfather.HQ.Tests.IssueProductionOrderCommandHandlerTests" name="Handle_IngredientAlreadyInInventory_ConsumesInventoryBeforeIssuingSubOrder" time="0.0072909" />
+    <testcase classname="Cogfather.HQ.Tests.ReceiveProductionReportCommandHandlerTests" name="Handle_WhenConsensusApproved_CompletesOrderAndUpdatesInventory" time="0.0093592" />
+    <testcase classname="Cogfather.HQ.Tests.IssueProductionOrderCommandHandlerTests" name="Handle_RecipeNotFound_ThrowsRecipeNotFoundException" time="0.0013188" />
+    <testcase classname="Cogfather.HQ.Tests.ReceiveProductionReportCommandHandlerTests" name="Handle_DoesNotProceedToConsensusWhenQuorumNotMet" time="0.0012016" />
+    <testcase classname="Cogfather.HQ.Tests.IssueProductionOrderCommandHandlerTests" name="Handle_RecipeExists_AddsOrderAndDispatches" time="0.0009164" />
+    <testcase classname="Cogfather.HQ.Tests.ValidationTests" name="ValidationBehavior_WithFailingValidator_ThrowsValidationException" time="0.0606486" />
+    <testcase classname="Cogfather.HQ.Tests.ValidationTests" name="ValidationBehavior_WithNoValidators_CallsNext" time="0.0007143" />
+    <testcase classname="Cogfather.HQ.Tests.ValidationTests" name="Validator_ValidCommand_NoErrors" time="0.0109030" />
+    <testcase classname="Cogfather.HQ.Tests.ValidationTests" name="Validator_EmptyRecipeId_HasError" time="0.0008152" />
+    <testcase classname="Cogfather.HQ.Tests.ValidationTests" name="Validator_ZeroAmount_HasError" time="0.0011457" />
+    <testcase classname="Cogfather.HQ.Tests.ValidationTests" name="Validator_NegativeAmount_HasError" time="0.0003333" />
+    <system-out>
+Test Framework Informational Messages:
+[xUnit.net 00:00:00.00] xUnit.net VSTest Adapter v3.1.4+50e68bbb8b (64-bit .NET 10.0.8)
+[xUnit.net 00:00:00.09]   Discovering: Cogfather.HQ.Tests
+[xUnit.net 00:00:00.17]   Discovered:  Cogfather.HQ.Tests
+[xUnit.net 00:00:00.21]   Starting:    Cogfather.HQ.Tests
+[xUnit.net 00:00:00.40]   Finished:    Cogfather.HQ.Tests
+</system-out>
+    <system-err></system-err>
+  </testsuite>
+</testsuites>
