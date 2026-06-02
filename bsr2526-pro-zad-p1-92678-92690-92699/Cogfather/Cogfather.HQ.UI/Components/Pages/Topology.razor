@@ -1,0 +1,165 @@
+@page "/topology"
+@attribute [Authorize]
+@rendermode InteractiveServer
+@inject ISender Sender
+@inject Cogfather.HQ.Infrastructure.Services.SystemLogService LogService
+@inject Cogfather.HQ.UI.Services.ConsensusEventService ConsensusEvents
+@implements IDisposable
+
+<PageTitle>Topology — Cogfather HQ</PageTitle>
+
+<div class="d-flex align-items-center justify-content-between mb-3">
+    <h1 class="mb-0">Network Topology</h1>
+    <span class="badge bg-secondary">@_nodes.Count node@(_nodes.Count == 1 ? "" : "s") registered</span>
+</div>
+
+@if (_loading)
+{
+    <div class="text-center p-4">
+        <div class="spinner-border text-primary" role="status"></div>
+    </div>
+}
+else if (_nodes.Count == 0)
+{
+    <div class="alert alert-info">No nodes registered. Start worker nodes to see them here.</div>
+}
+else
+{
+    <div class="card border-0 shadow-sm mb-3">
+        <div class="card-body p-2">
+            <svg viewBox="0 0 700 420" class="w-100" style="max-height:440px; font-family: monospace;">
+                <defs>
+                    <filter id="shadow" x="-20%" y="-20%" width="140%" height="140%">
+                        <feDropShadow dx="0" dy="2" stdDeviation="3" flood-opacity="0.2"/>
+                    </filter>
+                </defs>
+
+                @foreach (var (node, px, py) in NodePositions())
+                {
+                    var lc = node.Status == NodeStatus.Active ? "#0d6efd" : "#adb5bd";
+                    <line x1="350" y1="210" x2="@px" y2="@py"
+                          stroke="@lc" stroke-width="2"
+                          stroke-dasharray="@(node.Status == NodeStatus.Active ? "none" : "6,4")"
+                          opacity="0.5"/>
+                }
+
+                <rect x="295" y="182" width="110" height="56" rx="10"
+                      fill="#0d6efd" filter="url(#shadow)"/>
+                <text x="350" y="205" text-anchor="middle" fill="white" font-size="13" font-weight="bold">HQ</text>
+                <text x="350" y="224" text-anchor="middle" fill="#cfe2ff" font-size="11">Cogfather</text>
+
+                @foreach (var (node, px, py) in NodePositions())
+                {
+                    var fill = NodeFill(node);
+                    var shortId = node.NodeId.Length > 10 ? node.NodeId[..10] : node.NodeId;
+                    var line3 = node.FaultMode != FaultMode.None
+                        ? $"⚠ {node.FaultMode}"
+                        : node.Status.ToString();
+                    var line3Fill = node.FaultMode != FaultMode.None ? "#ffe082" : "rgba(255,255,255,0.7)";
+                    var line4 = node.ByzantineFaultCount > 0
+                        ? $"{node.ByzantineFaultCount} fault{(node.ByzantineFaultCount == 1 ? "" : "s")}"
+                        : "";
+
+                    <g filter="url(#shadow)">
+                        <circle cx="@px" cy="@py" r="46" fill="@fill" stroke="white" stroke-width="2.5"/>
+                        <text x="@px" y="@(py - 16)" text-anchor="middle" fill="white" font-size="11" font-weight="bold">@shortId</text>
+                        <text x="@px" y="@(py - 2)" text-anchor="middle" fill="rgba(255,255,255,0.9)" font-size="10">rep: @node.ReputationScore</text>
+                        <text x="@px" y="@(py + 13)" text-anchor="middle" fill="@line3Fill" font-size="10">@line3</text>
+                        <text x="@px" y="@(py + 27)" text-anchor="middle" fill="#ffcdd2" font-size="9" opacity="@(string.IsNullOrEmpty(line4) ? "0" : "1")">@line4</text>
+                    </g>
+                }
+            </svg>
+        </div>
+    </div>
+
+    <div class="d-flex flex-wrap gap-3 small text-muted">
+        <span class="d-flex align-items-center gap-1">
+            <svg width="14" height="14"><circle cx="7" cy="7" r="6" fill="#198754"/></svg> Healthy (rep &ge; 80)
+        </span>
+        <span class="d-flex align-items-center gap-1">
+            <svg width="14" height="14"><circle cx="7" cy="7" r="6" fill="#fd7e14"/></svg> Degraded (rep 40–79)
+        </span>
+        <span class="d-flex align-items-center gap-1">
+            <svg width="14" height="14"><circle cx="7" cy="7" r="6" fill="#dc3545"/></svg> Critical / Fault active
+        </span>
+        <span class="d-flex align-items-center gap-1">
+            <svg width="14" height="14"><circle cx="7" cy="7" r="6" fill="#6c757d"/></svg> Offline
+        </span>
+    </div>
+}
+
+@code {
+    private bool _loading = true;
+    private List<NodeRegistration> _nodes = [];
+    private Timer? _refreshTimer;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await Refresh();
+        _refreshTimer = new Timer(async _ =>
+        {
+            await Refresh();
+            try { await InvokeAsync(StateHasChanged); } catch (ObjectDisposedException) { }
+        }, null, TimeSpan.FromSeconds(5), TimeSpan.FromSeconds(5));
+
+        LogService.OnLogEntry += HandleLogEntry;
+        ConsensusEvents.OnConsensusReached += HandleConsensus;
+    }
+
+    private async void HandleConsensus(ConsensusResult _)
+    {
+        try
+        {
+            await Refresh();
+            await InvokeAsync(StateHasChanged);
+        }
+        catch (ObjectDisposedException) { }
+    }
+
+    private async void HandleLogEntry(Cogfather.HQ.Infrastructure.Services.SystemLogEntry entry)
+    {
+        if (entry.Category is "Registration" or "Fault")
+        {
+            await Refresh();
+            try { await InvokeAsync(StateHasChanged); } catch (ObjectDisposedException) { }
+        }
+    }
+
+    private async Task Refresh()
+    {
+        var nodes = await Sender.Send(new GetAllNodesQuery());
+        _nodes = nodes.ToList();
+        _loading = false;
+    }
+
+    private IEnumerable<(NodeRegistration Node, int Px, int Py)> NodePositions()
+    {
+        if (_nodes.Count == 0) yield break;
+        const double cx = 350, cy = 210;
+        var radius = _nodes.Count <= 4 ? 145.0 : 155.0;
+        for (var i = 0; i < _nodes.Count; i++)
+        {
+            var angle = i * (2 * Math.PI / _nodes.Count) - Math.PI / 2;
+            yield return (_nodes[i], (int)(cx + radius * Math.Cos(angle)), (int)(cy + radius * Math.Sin(angle)));
+        }
+    }
+
+    private static string NodeFill(NodeRegistration node)
+    {
+        if (node.Status != NodeStatus.Active) return "#6c757d";
+        if (node.FaultMode != FaultMode.None) return "#dc3545";
+        return node.ReputationScore switch
+        {
+            >= 80 => "#198754",
+            >= 40 => "#fd7e14",
+            _ => "#dc3545"
+        };
+    }
+
+    public void Dispose()
+    {
+        _refreshTimer?.Dispose();
+        LogService.OnLogEntry -= HandleLogEntry;
+        ConsensusEvents.OnConsensusReached -= HandleConsensus;
+    }
+}

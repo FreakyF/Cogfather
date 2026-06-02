@@ -1,0 +1,134 @@
+@page "/logs"
+@attribute [Authorize]
+@rendermode InteractiveServer
+@inject Cogfather.HQ.Infrastructure.Services.SystemLogService LogService
+@implements IDisposable
+
+<PageTitle>Logs — Cogfather HQ</PageTitle>
+
+<div class="d-flex align-items-center justify-content-between mb-3">
+    <h1 class="mb-0">System Logs</h1>
+    <div class="d-flex gap-2 align-items-center flex-wrap">
+        <select class="form-select form-select-sm" style="width:auto" @bind="_filterLevel">
+            <option value="">All Levels</option>
+            <option value="INF">Info</option>
+            <option value="WRN">Warning</option>
+            <option value="ERR">Error</option>
+        </select>
+        <select class="form-select form-select-sm" style="width:auto" @bind="_filterSource">
+            <option value="">All Sources</option>
+            <option value="HQ">HQ</option>
+            @foreach (var src in _knownSources.Where(s => s != "HQ"))
+            {
+                <option value="@src">@src</option>
+            }
+        </select>
+        <input class="form-control form-control-sm" style="width:160px" placeholder="Category…" @bind="_filterCategory" @bind:event="oninput" />
+        <button class="btn btn-sm btn-outline-secondary" @onclick="Clear">Clear</button>
+        <span class="badge bg-secondary">@_entries.Count entries</span>
+    </div>
+</div>
+
+@{
+    var visible = Filtered().ToList();
+}
+
+@if (visible.Count == 0)
+{
+    <div class="alert alert-info">No log entries yet. Start nodes or issue orders to see activity.</div>
+}
+else
+{
+    <div class="card border-0 shadow-sm">
+        <div class="card-body p-0">
+            <table class="table table-hover mb-0">
+                <thead class="table-light">
+                    <tr>
+                        <th style="width:80px">Time</th>
+                        <th style="width:60px">Level</th>
+                        <th style="width:120px">Source</th>
+                        <th style="width:120px">Category</th>
+                        <th>Message</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var e in visible)
+                    {
+                        <tr class="@RowClass(e.Level)">
+                            <td class="text-muted small">@e.Timestamp.ToLocalTime().ToString("HH:mm:ss")</td>
+                            <td><span class="badge @LevelBadge(e.Level)">@e.Level</span></td>
+                            <td class="font-monospace small text-truncate" style="max-width:120px" title="@e.Source">@e.Source</td>
+                            <td class="text-muted small">@e.Category</td>
+                            <td class="font-monospace small">@e.Message</td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+}
+
+@code {
+    private readonly List<Cogfather.HQ.Infrastructure.Services.SystemLogEntry> _entries = [];
+    private readonly HashSet<string> _knownSources = [];
+    private string _filterLevel = "";
+    private string _filterSource = "";
+    private string _filterCategory = "";
+
+    protected override void OnInitialized()
+    {
+        var recent = LogService.GetRecent(300);
+        foreach (var e in recent)
+        {
+            _entries.Add(e);
+            _knownSources.Add(e.Source);
+        }
+        LogService.OnLogEntry += HandleNewEntry;
+    }
+
+    private async void HandleNewEntry(Cogfather.HQ.Infrastructure.Services.SystemLogEntry entry)
+    {
+        try
+        {
+            _entries.Add(entry);
+            _knownSources.Add(entry.Source);
+            while (_entries.Count > 300)
+                _entries.RemoveAt(0);
+            await InvokeAsync(StateHasChanged);
+        }
+        catch (ObjectDisposedException) { }
+    }
+
+    private IEnumerable<Cogfather.HQ.Infrastructure.Services.SystemLogEntry> Filtered()
+    {
+        var q = _entries.AsEnumerable().Reverse();
+        if (!string.IsNullOrEmpty(_filterLevel))
+            q = q.Where(e => e.Level == _filterLevel);
+        if (!string.IsNullOrEmpty(_filterSource))
+            q = q.Where(e => e.Source == _filterSource);
+        if (!string.IsNullOrEmpty(_filterCategory))
+            q = q.Where(e => e.Category.Contains(_filterCategory, StringComparison.OrdinalIgnoreCase));
+        return q;
+    }
+
+    private void Clear()
+    {
+        _entries.Clear();
+    }
+
+    public void Dispose() => LogService.OnLogEntry -= HandleNewEntry;
+
+    private static string LevelBadge(string level) => level switch
+    {
+        "WRN" => "bg-warning text-dark",
+        "ERR" => "bg-danger",
+        _ => "bg-secondary"
+    };
+
+    private static string RowClass(string level) => level switch
+    {
+        "WRN" => "table-warning",
+        "ERR" => "table-danger",
+        _ => ""
+    };
+}
