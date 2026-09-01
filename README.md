@@ -52,8 +52,21 @@ The secured Blazor dashboard provides:
 
 ## 🙋‍♂️ Authors
 
-**Kamil Fudala** — [GitHub](https://github.com/FreakyF) · [LinkedIn](https://www.linkedin.com/in/kamil-fudala/)
+**Kamil Fudala**
 
-**Jan Chojnacki** — [GitHub](https://github.com/Jan-Chojnacki) · [LinkedIn](https://www.linkedin.com/in/jan-chojnacki-772b0530a/)
+- [GitHub](https://github.com/FreakyF)
+- [LinkedIn](https://www.linkedin.com/in/kamil-fudala/)
 
-**Jakub Babiarski** — [GitHub](https://github.com/JakubKross) · [LinkedIn](https://www.linkedin.com/in/jakub-babiarski-751611304/)
+**Jan Chojnacki**
+
+- [GitHub](https://github.com/Jan-Chojnacki)
+- [LinkedIn](https://www.linkedin.com/in/jan-chojnacki-772b0530a/)
+
+**Jakub Babiarski**
+
+- [GitHub](https://github.com/JakubKross)
+- [LinkedIn](https://www.linkedin.com/in/jakub-babiarski-751611304/)
+
+## ⚖️ License
+
+This project is licensed under the [MIT License](LICENSE).
