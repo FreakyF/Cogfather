@@ -1,4 +1,4 @@
-# Cogfather | Byzantine-Fault-Tolerant Manufacturing Orchestrator
+# Cogfather | Distributed Manufacturing Orchestrator
 
 A distributed manufacturing simulation where HQ dispatches recipe-based orders to worker nodes and accepts results through Byzantine-fault-tolerant consensus.
 
