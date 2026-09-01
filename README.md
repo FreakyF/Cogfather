@@ -7,9 +7,28 @@ A distributed manufacturing simulation where HQ dispatches recipe-based orders t
 The secured Blazor dashboard provides:
 
 * Order creation, report inspection, and inventory tracking
+
+  ![Create a production order](Docs/Screenshots/create-production-order.png)
+
+  ![Production orders](Docs/Screenshots/production-orders.png)
+
 * Live node status, reputation, and network topology
+
+  ![Worker node status and reputation](Docs/Screenshots/worker-nodes.png)
+
+  ![Network topology](Docs/Screenshots/network-topology.png)
+
 * Real-time consensus events and distributed system logs
+
+  ![Dashboard overview](Docs/Screenshots/dashboard-overview.png)
+
+  ![Production order details and node reports](Docs/Screenshots/production-order-details.png)
+
 * Per-node fault injection: data manipulation, silent failure, hash tampering, inventory lying, and delayed responses
+
+  ![Secured dashboard login](Docs/Screenshots/login.png)
+
+  ![Per-node fault injection](Docs/Screenshots/fault-injection.png)
 
 ## 🏗️ Architecture & Context
 
