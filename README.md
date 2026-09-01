@@ -6,27 +6,31 @@ A distributed manufacturing simulation where HQ dispatches recipe-based orders t
 
 The secured Blazor dashboard provides:
 
-![Secured dashboard login](Docs/Screenshots/login.png)
+* Secure sign-in with password authentication and CAPTCHA
 
-* Order creation, report inspection, and inventory tracking
+  ![Secure sign-in page](Docs/Screenshots/login.png)
 
-  ![Dashboard overview with order and inventory summaries](Docs/Screenshots/dashboard-overview.png)
+* Dashboard overview with active nodes, order totals, node status, and inventory summary
 
-  ![Create a production order](Docs/Screenshots/create-production-order.png)
+  ![Dashboard overview](Docs/Screenshots/dashboard-overview.png)
+
+* Production order management: browse orders, issue a new order, and inspect its details and node reports
 
   ![Production orders](Docs/Screenshots/production-orders.png)
 
-* Live node status, reputation, and network topology
-
-  ![Worker node status and reputation](Docs/Screenshots/worker-nodes.png)
-
-  ![Network topology](Docs/Screenshots/network-topology.png)
-
-* Real-time consensus events and distributed system logs
+  ![Create a production order](Docs/Screenshots/create-production-order.png)
 
   ![Production order details and node reports](Docs/Screenshots/production-order-details.png)
 
-* Per-node fault injection: data manipulation, silent failure, hash tampering, inventory lying, and delayed responses
+* Worker monitoring with live status, active fault, reputation, and fault controls
+
+  ![Worker node status and reputation](Docs/Screenshots/worker-nodes.png)
+
+* Network topology showing HQ and connected worker nodes
+
+  ![Network topology](Docs/Screenshots/network-topology.png)
+
+* Per-node fault injection controls for simulating Byzantine and availability failures
 
   ![Per-node fault injection](Docs/Screenshots/fault-injection.png)
 
